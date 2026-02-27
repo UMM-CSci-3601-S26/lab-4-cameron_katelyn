@@ -7,7 +7,7 @@ import org.mongojack.ObjectId;
 
 @SuppressWarnings({"VisibilityModifier"})
 public class Family {
-  @ObjectId @Id
+  @Id
   @SuppressWarnings({"MemberName"})
   public String _id;
 
