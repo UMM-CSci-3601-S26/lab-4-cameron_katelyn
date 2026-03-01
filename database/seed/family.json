@@ -30,19 +30,19 @@
       {
         "name": "Johnny Jr.",
         "grade": "8",
-        "school": "HHC",
+        "school": "HHS",
         "requestedSupplies": ["Headphones, Backpack"]
       },
       {
         "name": "Burtrum",
         "grade": "6",
-        "school": "HHC",
+        "school": "HHS",
         "requestedSupplies": ["Backpack"]
       },
       {
         "name": "Harold",
         "grade": "4",
-        "school": "HHC",
+        "school": "HHS",
         "requestedSupplies": ["Backpack"]
       }
     ]
