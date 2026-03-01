@@ -1,6 +1,5 @@
 [
   {
-    "_id": "238829384928374",
     "guardianName": "Jane Doe",
     "email": "jane@email.com",
     "address": "123 Street",
@@ -21,7 +20,6 @@
     ]
   },
   {
-    "_id": "23894870878372",
     "guardianName": "John Doe",
     "email": "john@email.com",
     "address": "1232 Street",
@@ -48,7 +46,6 @@
     ]
   },
   {
-    "_id": "2938479879838",
     "guardianName": "Janis Dorothy",
     "email": "jane@email.com",
     "address": "123 Street",

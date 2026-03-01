@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bson.UuidRepresentation;
-//import org.bson.conversions.Bson;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.mongojack.JacksonMongoCollection;
 import io.javalin.http.HttpStatus;
@@ -14,20 +14,18 @@ import io.javalin.http.Context;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.DeleteResult;
 
-//import io.javalin.http.BadRequestResponse;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.NotFoundResponse;
 
-//import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
-//import static com.mongodb.client.model.Filters.regex;
 
 import umm3601.Controller;
-//import umm3601.family.Family;
-//import umm3601.inventory.Inventory;
+import umm3601.family.Family;
+import umm3601.inventory.Inventory;
 
 public class FamilyController implements Controller {
   private static final String API_FAMILY = "/api/family";
-  private static final String API_DASHBOARD = "/api/family/dashboard";
+  private static final String API_DASHBOARD = "/api/dashboard";
   private static final String API_FAMILY_BY_ID = "/api/family/{id}";
 
   public static final String EMAIL_REGEX = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
@@ -49,13 +47,19 @@ public class FamilyController implements Controller {
    */
   public void getFamily(Context ctx) {
     String id = ctx.pathParam("id");
-    Family family = familyCollection.findOneById(id);
+    Family family;
 
-    if (family == null) {
-      throw new NotFoundResponse("Family ID not found");
+    try {
+      family = familyCollection.find(eq("_id", new ObjectId(id))).first();
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested family id wasn't a legal Mongo Object ID.");
     }
-    ctx.json(family);
-    ctx.status(HttpStatus.OK);
+    if (family == null) {
+      throw new NotFoundResponse("The requested family was not found");
+    } else {
+      ctx.json(family);
+      ctx.status(HttpStatus.OK);
+    }
   }
 
   /**
@@ -75,7 +79,6 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
-  //getFamiliesBySchool? (for dashboard)
 
   /**
    * Add a new family using information from the context

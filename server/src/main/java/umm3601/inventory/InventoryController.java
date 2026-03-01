@@ -1,13 +1,17 @@
 package umm3601.inventory;
 
+import static com.mongodb.client.model.Filters.eq;
+
 import java.util.ArrayList;
 
 import org.bson.UuidRepresentation;
+import org.bson.types.ObjectId;
 import org.mongojack.JacksonMongoCollection;
 
 import com.mongodb.client.MongoDatabase;
 
 import io.javalin.Javalin;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
@@ -29,7 +33,7 @@ public class InventoryController implements Controller {
   }
 
   // GET all inventory
-  public void getInventory(Context ctx) {
+  public void getAllInventory(Context ctx) {
     ArrayList<Inventory> inventory = inventoryCollection
       .find()
       .into(new ArrayList<>());
@@ -41,14 +45,21 @@ public class InventoryController implements Controller {
   // GET inventory by ID
   public void getInventoryById(Context ctx) {
     String id = ctx.pathParam("id");
-    Inventory item = inventoryCollection.findOneById(id);
+    Inventory inventory;
 
-    if (item == null) {
-      throw new NotFoundResponse("Inventory item not found");
+    try { inventory = inventoryCollection
+      .find(eq("_id", new ObjectId(id)))
+      .first(); } catch (IllegalArgumentException e)
+
+      { throw new BadRequestResponse(
+        "The requested inventory id wasn't a legal Mongo Object ID.");
+      } if (inventory == null) { throw new NotFoundResponse(
+        "The requested inventory was not found");
+      } else {
+        ctx.json(inventory);
+        ctx.status(HttpStatus.OK);
+      }
     }
-    ctx.json(item);
-    ctx.status(HttpStatus.OK);
-  }
 
   // POST new inventory item
   public void addInventory(Context ctx) {
@@ -93,7 +104,7 @@ public class InventoryController implements Controller {
 
   @Override
   public void addRoutes(Javalin server) {
-    server.get(API_INVENTORY, this::getInventory);
+    server.get(API_INVENTORY, this::getAllInventory);
     server.post(API_INVENTORY, this::addInventory);
     server.get(API_INVENTORY_BY_ID, this::getInventoryById);
     server.put(API_INVENTORY_BY_ID, this::updateInventoryQuantity);
