@@ -1,26 +1,17 @@
 package umm3601.supply;
 
-import static com.mongodb.client.model.Filters.eq;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -29,14 +20,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
@@ -44,18 +31,10 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
-import io.javalin.Javalin;
-import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
-import io.javalin.json.JavalinJackson;
-import io.javalin.validation.BodyValidator;
-import io.javalin.validation.Validation;
-import io.javalin.validation.ValidationError;
-import io.javalin.validation.ValidationException;
-import io.javalin.validation.Validator;
-import umm3601.user.UserController;
+//import io.javalin.json.JavalinJackson;
 
 @SuppressWarnings({ "MagicNumber" })
 public class SupplyControllerSpec {
@@ -65,7 +44,7 @@ public class SupplyControllerSpec {
   private static MongoClient mongoClient;
   private static MongoDatabase db;
 
-  private static JavalinJackson javalinJackson = new JavalinJackson();
+  //private static JavalinJackson javalinJackson = new JavalinJackson();
 
   @Mock
   private Context ctx;
@@ -116,7 +95,7 @@ public class SupplyControllerSpec {
         .append("required", false));
     testSupply.add(
       new Document()
-        .append("school", "MAES")
+        .append("school", "MAHS")
         .append("grade", "K")
         .append("year", "2025-2026")
         .append("itemKey", "crayons")
@@ -126,7 +105,7 @@ public class SupplyControllerSpec {
         .append("required", true));
     testSupply.add(
       new Document()
-        .append("school", "MAES")
+        .append("school", "SMS")
         .append("grade", "K")
         .append("year", "2025-2026")
         .append("itemKey", "notebook")
@@ -136,6 +115,7 @@ public class SupplyControllerSpec {
         .append("required", true));
     schoolSupplyId = new ObjectId();
     Document schoolSupply = new Document()
+      .append("_id", schoolSupplyId)
       .append("school", "MAES")
       .append("grade", "3")
       .append("year", "2025-2026")
@@ -173,18 +153,18 @@ public class SupplyControllerSpec {
         supplyArrayListCaptor.getValue().size());
   }
 
-  // @Test
-  // void getSupplyWithExistentId() throws IOException {
-  //   String id = schoolSupplyId.toHexString();
-  //   when(ctx.pathParam("id")).thenReturn(id);
+  @Test
+  void getSupplyWithExistentId() throws IOException {
+    String id = schoolSupplyId.toHexString();
+    when(ctx.pathParam("id")).thenReturn(id);
 
-  //   supplyController.getSupply(ctx);
+    supplyController.getSupply(ctx);
 
-  //   verify(ctx).json(supplyCaptor.capture());
-  //   verify(ctx).status(HttpStatus.OK);
-  //   assertEquals("folder_red", supplyCaptor.getValue().itemKey);
-  //   assertEquals(schoolSupplyId.toHexString(), supplyCaptor.getValue()._id);
-  // }
+    verify(ctx).json(supplyCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+    assertEquals("folder_red", supplyCaptor.getValue().itemKey);
+    assertEquals(schoolSupplyId.toHexString(), supplyCaptor.getValue()._id);
+  }
 
   @Test
   void getUserWithNonexistentId() throws IOException {
@@ -196,5 +176,82 @@ public class SupplyControllerSpec {
     });
 
     assertEquals("The requested supply was not found", exception.getMessage());
+  }
+
+  @Test
+  void canGetSupplyWithSchool() throws IOException {
+    Map<String, List<String>> queryParams = new HashMap<>();
+    queryParams.put(SupplyController.SCHOOL_KEY, Arrays.asList(new String[] {"SMS"}));
+    when(ctx.queryParamMap()).thenReturn(queryParams);
+    when(ctx.queryParam(SupplyController.SCHOOL_KEY)).thenReturn("SMS");
+
+    supplyController.getSupplies(ctx);
+
+    verify(ctx).json(supplyArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    // Confirm that all the users passed to `json` work for OHMNET.
+    for (Supply supply : supplyArrayListCaptor.getValue()) {
+      assertEquals("SMS", supply.school);
+    }
+  }
+
+  @Test
+  void canGetSupplyWithGrade() throws IOException {
+    Map<String, List<String>> queryParams = new HashMap<>();
+    queryParams.put(SupplyController.GRADE_KEY, Arrays.asList(new String[] {"1"}));
+    when(ctx.queryParamMap()).thenReturn(queryParams);
+    when(ctx.queryParam(SupplyController.GRADE_KEY)).thenReturn("1");
+
+    supplyController.getSupplies(ctx);
+
+    verify(ctx).json(supplyArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    // Confirm that all the users passed to `json` work for OHMNET.
+    for (Supply supply : supplyArrayListCaptor.getValue()) {
+      assertEquals("1", supply.grade);
+    }
+  }
+
+  @Test
+  void canGetSupplyWithYear() throws IOException {
+    Map<String, List<String>> queryParams = new HashMap<>();
+    queryParams.put(SupplyController.YEAR_KEY, Arrays.asList(new String[] {"2025-2026"}));
+    when(ctx.queryParamMap()).thenReturn(queryParams);
+    when(ctx.queryParam(SupplyController.YEAR_KEY)).thenReturn("2025-2026");
+
+    supplyController.getSupplies(ctx);
+
+    verify(ctx).json(supplyArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    // Confirm that all the users passed to `json` work for OHMNET.
+    for (Supply supply : supplyArrayListCaptor.getValue()) {
+      assertEquals("2025-2026", supply.year);
+    }
+  }
+
+  @Test
+  void canGetSupplyWithAll() throws IOException {
+    Map<String, List<String>> queryParams = new HashMap<>();
+    queryParams.put(SupplyController.YEAR_KEY, Arrays.asList(new String[] {"2025-2026"}));
+    queryParams.put(SupplyController.SCHOOL_KEY, Arrays.asList(new String[] {"SMS"}));
+    queryParams.put(SupplyController.GRADE_KEY, Arrays.asList(new String[] {"K"}));
+    when(ctx.queryParamMap()).thenReturn(queryParams);
+    when(ctx.queryParam(SupplyController.YEAR_KEY)).thenReturn("2025-2026");
+    when(ctx.queryParam(SupplyController.SCHOOL_KEY)).thenReturn("SMS");
+    when(ctx.queryParam(SupplyController.GRADE_KEY)).thenReturn("K");
+
+    supplyController.getSupplies(ctx);
+
+    verify(ctx).json(supplyArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    for (Supply supply : supplyArrayListCaptor.getValue()) {
+      assertEquals("2025-2026", supply.year);
+      assertEquals("SMS", supply.school);
+      assertEquals("K", supply.grade);
+    }
   }
 }
