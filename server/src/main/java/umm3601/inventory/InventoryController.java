@@ -3,6 +3,8 @@ package umm3601.inventory;
 import static com.mongodb.client.model.Filters.eq;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
@@ -21,6 +23,8 @@ public class InventoryController implements Controller {
 
   private static final String API_INVENTORY = "/api/inventory";
   private static final String API_INVENTORY_BY_ID = "/api/inventory/{id}";
+
+  public static final String ITEMKEY_REGEX = "^[a-z_]+$";
 
   private final JacksonMongoCollection<Inventory> inventoryCollection;
 
@@ -61,13 +65,27 @@ public class InventoryController implements Controller {
       }
     }
 
+
   // POST new inventory item
   public void addInventory(Context ctx) {
+    //String body = ctx.body();
     Inventory newItem = ctx.bodyValidator(Inventory.class)
-      .check(i -> i.quantityAvailable >= 0, "Quantity must be >= 0")
+      .check(inventory -> inventory.quantityAvailable >= 0,
+        "Quantity must be >= 0")
+      .check(inventory -> inventory.itemKey != null,
+        "Inventory must have a non-empty item key")
+      .check(inventory -> inventory.itemKey.matches(ITEMKEY_REGEX),
+        "Inventory Item Key must be lowercase with no spaces")
+      .check(inventory -> inventory.itemName != null,
+        "Inventory must have a non-empty item name")
       .get();
 
     inventoryCollection.insertOne(newItem);
+
+    Map<String, String> result = new HashMap<>();
+    result.put("id", newItem._id);
+
+    ctx.json(result);
     ctx.status(HttpStatus.CREATED);
   }
 
@@ -94,6 +112,7 @@ public class InventoryController implements Controller {
     var deleteResult = inventoryCollection.removeById(id);
 
     if (deleteResult.getDeletedCount() != 1) {
+      ctx.status(HttpStatus.NOT_FOUND);
       throw new NotFoundResponse(
         "Was unable to delete ID "
           + id
