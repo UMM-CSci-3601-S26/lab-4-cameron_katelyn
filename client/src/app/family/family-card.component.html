@@ -1,44 +1,44 @@
-@if (family()) {
+@if (family) {
   <mat-card class="family-card">
     <mat-card-header>
-      @if (family().avatar) {
-        <img mat-card-avatar [src]="family().avatar" alt="Avatar for {{family().name}}" class="family-avatar">
-      }
-      <mat-card-title class="family-card-name">{{ family().name }}</mat-card-title>
-      <mat-card-subtitle class="family-card-company">{{ family().company }}</mat-card-subtitle>
+      <mat-card-title class="family-card-guardianName">{{ family.guardianName }}</mat-card-title>
+      <mat-card-subtitle class="family-card-email">{{ family.email }}</mat-card-subtitle>
     </mat-card-header>
-    @if (!simple()) {
+    <!-- @if (!simple()) { -->
       <mat-card-content>
         <mat-list>
           <mat-list-item>
             <mat-icon matListItemIcon>dataset</mat-icon>
-            <p matListItemTitle>Role</p>
-            <!--
-            We had to put both the `role` and `age` entries on a single line. Otherwise
-            we got an annoying leading space in front of the values.
-            -->
-            <p matListItemLine class="family-card-role">{{ family().role }}</p>
+            <p matListItemTitle>Students</p>
+
+            <ul>
+              @for (students of family.students; track students.name) {
+                <li>
+                  <div>{{ students.name }}</div>
+                </li>
+              }
+            </ul>
           </mat-list-item>
           <mat-divider [inset]=true></mat-divider>
           <mat-list-item>
             <mat-icon matListItemIcon>schedule</mat-icon>
-            <p matListItemTitle>Age</p>
-            <p matListItemLine class="family-card-age">{{ family().age }}</p>
+            <p matListItemTitle>Address</p>
+            <p matListItemLine class="family-card-address">{{ family.address }}</p>
           </mat-list-item>
           <mat-divider [inset]=true></mat-divider>
           <mat-list-item>
-            <a href="mailto:{{family().email}}"  matListItemIcon><mat-icon>mail</mat-icon></a>
+            <a href="mailto:{{family.email}}"  matListItemIcon><mat-icon>mail</mat-icon></a>
             <p matListItemTitle>Email</p>
-            <a matListItemLine class="family-card-email" href="mailto:{{family().email}}">{{family().email}}</a>
-            <a href="mailto:{{family().email}}" matListItemMeta mat-icon-button><mat-icon>open_in_new</mat-icon></a>
+            <a matListItemLine class="family-card-email" href="mailto:{{family.email}}">{{family.email}}</a>
+            <a href="mailto:{{family.email}}" matListItemMeta mat-icon-button><mat-icon>open_in_new</mat-icon></a>
           </mat-list-item>
         </mat-list>
       </mat-card-content>
-    }
-    @if (simple()) {
+    <!-- } -->
+    <!-- @if (simple()) {
       <mat-card-actions>
-        <button mat-button data-test="viewProfileButton" [routerLink]="['/families', family()._id]">View Profile</button>
+        <button mat-button data-test="viewProfileButton" [routerLink]="['/families', family._id]">View Profile</button>
       </mat-card-actions>
-    }
+    } -->
   </mat-card>
 }

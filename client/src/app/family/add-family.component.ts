@@ -96,11 +96,20 @@ export class AddFamilyComponent {
     timeSlot: [
       { type: 'required', message: 'TimeSlot is required' },
       //{ type: 'pattern', message: 'Role must be Admin, Editor, or Viewer' },
-    ]
+    ],
 
-    // students: [
-    //   {type: 'required', message: 'Students are required'}
-    // ],
+    students: {
+      name: [
+        { type: 'required', message: 'Name is required' },
+        { type: 'minlength', message: 'Student name must be at least 2 characters long' }
+      ],
+      grade: [
+        { type: 'required', message: 'Grade is required' }
+      ],
+      school: [
+        { type: 'required', message: 'School is required' }
+      ]
+    }
   };
 
   formControlHasError(controlName: string): boolean {
@@ -108,10 +117,15 @@ export class AddFamilyComponent {
       (this.addFamilyForm.get(controlName).dirty || this.addFamilyForm.get(controlName).touched);
   }
 
-  getErrorMessage(guardianName: keyof typeof this.addFamilyValidationMessages): string {
-    for(const {type, message} of this.addFamilyValidationMessages[guardianName]) {
-      if (this.addFamilyForm.get(guardianName).hasError(type)) {
+  getErrorMessage(controlName: keyof typeof this.addFamilyValidationMessages): string {
+    const messages = this.addFamilyValidationMessages[controlName];
+    if (!Array.isArray(messages)) {
+      return ''; // either throws or ignores
+    }
+    for (const { type, message } of messages) {
+      if (this.addFamilyForm.get(controlName)?.hasError(type)) {
         return message;
+
       }
     }
     return 'Unknown error';

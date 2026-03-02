@@ -15,7 +15,7 @@ export class FamilyService {
   readonly dashboardUrl: string = `${environment.apiUrl}dashboard`;
 
   getFamilies(): Observable<Family[]> {
-    let httpParams: HttpParams = new HttpParams();
+    const httpParams: HttpParams = new HttpParams();
     return this.httpClient.get<Family[]>(this.familyUrl, {
       params: httpParams,
     });
@@ -29,12 +29,12 @@ export class FamilyService {
     return this.httpClient.post<{id: string}>(this.familyUrl, newFamily).pipe(map(response => response.id));
   }
 
-  deleteFamily(id: string): Observable<any> {
+  deleteFamily(id: string): Observable<unknown> {
     return this.httpClient.delete<void>(`${this.familyUrl}/${id}}`);
   }
 
   getDashboardStats(): Observable<DashboardStats[]> {
-    let httpParams: HttpParams = new HttpParams();
+    const httpParams: HttpParams = new HttpParams();
     return this.httpClient.get<DashboardStats[]>(this.dashboardUrl, {
       params: httpParams,
     });

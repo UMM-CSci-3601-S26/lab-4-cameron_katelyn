@@ -6,7 +6,8 @@ import { UserListComponent } from './users/user-list.component';
 import { UserProfileComponent } from './users/user-profile.component';
 import { CompanyListComponent } from './company-list/company-list.component';
 import { OperatorDashComponent } from './operator-dash/operator-dash.component';
-
+import { FamilyListComponent } from './family/family-list.component';
+import { AddFamilyComponent } from './family/add-family.component';
 // Note that the 'users/new' route needs to come before 'users/:id'.
 // If 'users/:id' came first, it would accidentally catch requests to
 // 'users/new'; the router would just think that the string 'new' is a user ID.
@@ -16,7 +17,9 @@ const routes: Routes = [
   {path: 'users/new', component: AddUserComponent, title: 'Add User'},
   {path: 'users/:id', component: UserProfileComponent, title: 'User Profile'},
   {path: 'companies', component: CompanyListComponent, title: 'Companies'},
-  {path: 'dashboard', component: OperatorDashComponent, title: 'Operator Dashboard'}
+  {path: 'dashboard', component: OperatorDashComponent, title: 'Operator Dashboard'},
+  {path: 'family', component: FamilyListComponent, title: 'Family'},
+  {path: 'family/new', component: AddFamilyComponent, title: 'Add Family'}
 ];
 
 @NgModule({

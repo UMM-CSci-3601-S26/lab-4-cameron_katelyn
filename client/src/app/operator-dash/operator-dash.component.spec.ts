@@ -10,7 +10,7 @@ describe('OperatorDashComponent', () => {
     await TestBed.configureTestingModule({
       imports: [OperatorDashComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(OperatorDashComponent);
     component = fixture.componentInstance;
