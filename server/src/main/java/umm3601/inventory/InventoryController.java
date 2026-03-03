@@ -101,7 +101,8 @@ public class InventoryController implements Controller {
   public void updateInventoryQuantity(Context ctx) {
     String id = ctx.pathParam("id");
     QuantityUpdate update = ctx.bodyValidator(QuantityUpdate.class)
-      .check(quantity -> quantity.quantityAvailable >= 0, "Quantity must be >= 0")
+      .check(quantity -> quantity.getQuantityAvailable() >= 0,
+        "Quantity must be >= 0")
       .get();
     Inventory existing = inventoryCollection.findOneById(id);
 
@@ -109,7 +110,7 @@ public class InventoryController implements Controller {
       throw new NotFoundResponse("Inventory item not found");
     }
 
-    existing.quantityAvailable = update.quantityAvailable;
+    existing.quantityAvailable = update.getQuantityAvailable();
     inventoryCollection.replaceOneById(id, existing);
     ctx.status(HttpStatus.OK);
   }

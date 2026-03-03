@@ -125,7 +125,7 @@ class FamilyControllerSpec {
           .append("name", "Sara")
           .append("grade", "7")
           .append("school", "MAHS")
-          .append("requestedSupplies", List.of("backpack","headphones")),
+          .append("requestedSupplies", List.of("backpack", "headphones")),
         new Document()
           .append("name", "Ronan")
           .append("grade", "4")

@@ -111,7 +111,7 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
-  public void getDashboardStats (Context ctx) {
+  public void getDashboardStats(Context ctx) {
     ArrayList<Family> families = familyCollection
       .find()
       .into(new ArrayList<>());
@@ -120,7 +120,7 @@ public class FamilyController implements Controller {
     Map<String, Integer> studentsPerGrade = new HashMap<>();
 
     for (Family family : families) {
-      for (Family.StudentInfo student : family.students ) {
+      for (Family.StudentInfo student : family.students) {
         //count per school
         studentsPerSchool.merge(student.school, 1, Integer::sum);
 
