@@ -1,18 +1,24 @@
-import { Component, Input} from '@angular/core';
+import { Component, input} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { CommonModule } from '@angular/common';
 //import { RouterLink } from '@angular/router';
 import { Family } from './family';
 @Component({
   selector: 'app-family-card',
   templateUrl: './family-card.component.html',
   styleUrls: ['./family-card.component.scss'],
-  imports: [MatCardModule, MatButtonModule, MatListModule, MatIconModule]
+  imports: [
+    MatCardModule,
+    MatButtonModule,
+    MatListModule,
+    CommonModule,
+    MatIconModule]
   //, RouterLink
 })
 
 export class FamilyCardComponent {
-  @Input({ required: true }) family!: Family;
+  family = input.required<Family>();
 }

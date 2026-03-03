@@ -11,7 +11,7 @@ import { Family, DashboardStats } from './family';
 export class FamilyService {
   private httpClient = inject(HttpClient);
 
-  readonly familyUrl: string = `${environment.apiUrl}families`;
+  readonly familyUrl: string = `${environment.apiUrl}family`;
   readonly dashboardUrl: string = `${environment.apiUrl}dashboard`;
 
   getFamilies(): Observable<Family[]> {
@@ -30,7 +30,7 @@ export class FamilyService {
   }
 
   deleteFamily(id: string): Observable<unknown> {
-    return this.httpClient.delete<void>(`${this.familyUrl}/${id}}`);
+    return this.httpClient.delete<void>(`${this.familyUrl}/${id}`);
   }
 
   getDashboardStats(): Observable<DashboardStats[]> {

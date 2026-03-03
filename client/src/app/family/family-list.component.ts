@@ -13,13 +13,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { catchError, of} from 'rxjs';
 import { Family } from './family';
-//import { FamilyCardComponent } from './family-card.component';
+import { FamilyCardComponent } from './family-card.component';
 import { FamilyService } from './family.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-family-list-component',
-  templateUrl: 'family-list.component.html',
+  selector: 'app-family',
+  templateUrl: './family-list.component.html',
   styleUrls: ['./family-list.component.scss'],
   providers: [],
   imports: [
@@ -30,12 +30,13 @@ import { toSignal } from '@angular/core/rxjs-interop';
     MatSelectModule,
     MatOptionModule,
     MatRadioModule,
-    // FamilyCardComponent,
+    FamilyCardComponent,
     MatListModule,
     RouterLink,
     MatButtonModule,
     MatTooltipModule,
     MatIconModule,
+    FamilyCardComponent
   ],
 })
 export class FamilyListComponent {
