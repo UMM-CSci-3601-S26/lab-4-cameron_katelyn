@@ -1,408 +1,441 @@
-// import { Location } from '@angular/common';
-// import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-// import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
-// import { AbstractControl, FormGroup } from '@angular/forms';
-// import { provideRouter, Router } from '@angular/router';
-// import { MatSnackBarModule } from '@angular/material/snack-bar';
-// import { of, throwError } from 'rxjs';
-// import { MockFamilyService } from 'src/testing/family.service.mock';
-// import { AddFamilyComponent } from './add-family.component';
-// import { FamilyProfileComponent } from './family-profile.component';
-// import { FamilyService } from './family.service';
-// import { provideHttpClient } from '@angular/common/http';
+import { Location } from '@angular/common';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
+import { AbstractControl, FormGroup } from '@angular/forms';
+import { provideRouter, Router } from '@angular/router';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { of, throwError } from 'rxjs';
+import { MockFamilyService } from 'src/testing/family.service.mock';
+import { AddFamilyComponent } from './add-family.component';
+import { provideHttpClient } from '@angular/common/http';
+import { FamilyService } from './family.service';
 
-// describe('AddFamilyComponent', () => {
-//   let addFamilyComponent: AddFamilyComponent;
-//   let addFamilyForm: FormGroup;
-//   let fixture: ComponentFixture<AddFamilyComponent>;
+describe('AddFamilyComponent', () => {
+  let addFamilyComponent: AddFamilyComponent;
+  let addFamilyForm: FormGroup;
+  let fixture: ComponentFixture<AddFamilyComponent>;
 
-//   beforeEach(waitForAsync(() => {
-//     TestBed.configureTestingModule({
-//       imports: [
-//         AddFamilyComponent,
-//         MatSnackBarModule
-//       ],
-//       providers: [
-//         provideHttpClient(),
-//         provideHttpClientTesting(),
-//         { provide: FamilyService, useClass: MockFamilyService }
-//       ]
-//     }).compileComponents().catch(error => {
-//       expect(error).toBeNull();
-//     });
-//   }));
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [
+        AddFamilyComponent,
+        MatSnackBarModule
+      ],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: FamilyService, useClass: MockFamilyService }
+      ]
+    }).compileComponents().catch(error => {
+      expect(error).toBeNull();
+    });
+  }));
 
-//   beforeEach(() => {
-//     fixture = TestBed.createComponent(AddFamilyComponent);
-//     addFamilyComponent = fixture.componentInstance;
-//     fixture.detectChanges();
-//     addFamilyForm = addFamilyComponent.addFamilyForm;
-//     expect(addFamilyForm).toBeDefined();
-//     expect(addFamilyForm.controls).toBeDefined();
-//   });
+  beforeEach(() => {
+    fixture = TestBed.createComponent(AddFamilyComponent);
+    addFamilyComponent = fixture.componentInstance;
+    fixture.detectChanges();
+    addFamilyForm = addFamilyComponent.addFamilyForm;
+    expect(addFamilyForm).toBeDefined();
+    expect(addFamilyForm.controls).toBeDefined();
+  });
 
-//   // Not terribly important; if the component doesn't create
-//   // successfully that will probably blow up a lot of things.
-//   // Including it, though, does give us confidence that our
-//   // our component definitions don't have errors that would
-//   // prevent them from being successfully constructed.
-//   it('should create the component and form', () => {
-//     expect(addFamilyComponent).toBeTruthy();
-//     expect(addFamilyForm).toBeTruthy();
-//   });
+  // Not terribly important; if the component doesn't create
+  // successfully that will probably blow up a lot of things.
+  // Including it, though, does give us confidence that our
+  // our component definitions don't have errors that would
+  // prevent them from being successfully constructed.
+  it('should create the component and form', () => {
+    expect(addFamilyComponent).toBeTruthy();
+    expect(addFamilyForm).toBeTruthy();
+  });
 
-//   // Confirms that an initial, empty form is *not* valid, so
-//   // people can't submit an empty form.
-//   it('form should be invalid when empty', () => {
-//     expect(addFamilyForm.valid).toBeFalsy();
-//   });
+  // Confirms that an initial, empty form is *not* valid, so
+  // people can't submit an empty form.
+  it('form should be invalid when empty', () => {
+    expect(addFamilyForm.valid).toBeFalsy();
+  });
 
-//   describe('The name field', () => {
-//     let nameControl: AbstractControl;
+  describe('The guardian name field', () => {
+    let guardianNameControl: AbstractControl;
 
-//     beforeEach(() => {
-//       nameControl = addFamilyComponent.addFamilyForm.controls.name;
-//     });
+    beforeEach(() => {
+      guardianNameControl = addFamilyComponent.addFamilyForm.controls.guardianName;
+    });
 
-//     it('should not allow empty names', () => {
-//       nameControl.setValue('');
-//       expect(nameControl.valid).toBeFalsy();
-//     });
+    it('should not allow empty guardian names', () => {
+      guardianNameControl.setValue('');
+      expect(guardianNameControl.valid).toBeFalsy();
+    });
 
-//     it('should be fine with "Chris Smith"', () => {
-//       nameControl.setValue('Chris Smith');
-//       expect(nameControl.valid).toBeTruthy();
-//     });
+    it('should be fine with "Chris Smith"', () => {
+      guardianNameControl.setValue('Chris Smith');
+      expect(guardianNameControl.valid).toBeTruthy();
+    });
 
-//     it('should fail on single character names', () => {
-//       nameControl.setValue('x');
-//       expect(nameControl.valid).toBeFalsy();
-//       // Annoyingly, Angular uses lowercase 'l' here
-//       // when it's an upper case 'L' in `Validators.minLength(2)`.
-//       expect(nameControl.hasError('minlength')).toBeTruthy();
-//     });
+    it('should fail on single character guardian names', () => {
+      guardianNameControl.setValue('x');
+      expect(guardianNameControl.valid).toBeFalsy();
+      expect(guardianNameControl.hasError('minlength')).toBeTruthy();
+    });
 
-//     // In the real world, you'd want to be pretty careful about
-//     // setting upper limits on things like name lengths just
-//     // because there are people with really long names.
-//     it('should fail on really long names', () => {
-//       nameControl.setValue('x'.repeat(100));
-//       expect(nameControl.valid).toBeFalsy();
-//       // Annoyingly, Angular uses lowercase 'l' here
-//       // when it's an upper case 'L' in `Validators.maxLength(2)`.
-//       expect(nameControl.hasError('maxlength')).toBeTruthy();
-//     });
+    it('should fail on really long guardian names', () => {
+      guardianNameControl.setValue('x'.repeat(100));
+      expect(guardianNameControl.valid).toBeFalsy();
+      expect(guardianNameControl.hasError('maxlength')).toBeTruthy();
+    });
 
-//     it('should allow digits in the name', () => {
-//       nameControl.setValue('Bad2Th3B0ne');
-//       expect(nameControl.valid).toBeTruthy();
-//     });
+    it('should fail if we provide an "existing" guardian name', () => {
+      // We're assuming that "abc123" and "123abc" already
+      // exist so we disallow them.
+      guardianNameControl.setValue('abc123');
+      expect(guardianNameControl.valid).toBeFalsy();
+      expect(guardianNameControl.hasError('existingName')).toBeTruthy();
 
-//     it('should fail if we provide an "existing" name', () => {
-//       // We're assuming that "abc123" and "123abc" already
-//       // exist so we disallow them.
-//       nameControl.setValue('abc123');
-//       expect(nameControl.valid).toBeFalsy();
-//       expect(nameControl.hasError('existingName')).toBeTruthy();
+      guardianNameControl.setValue('123abc');
+      expect(guardianNameControl.valid).toBeFalsy();
+      expect(guardianNameControl.hasError('existingName')).toBeTruthy();
+    });
+  });
 
-//       nameControl.setValue('123abc');
-//       expect(nameControl.valid).toBeFalsy();
-//       expect(nameControl.hasError('existingName')).toBeTruthy();
-//     });
-//   });
+  describe('Students FormArray', () => {
+    //confirms input fields are blank
+    it('should start with an empty students array', () => {
+      const students = addFamilyComponent.students;
+      expect(students).toBeDefined();
+      expect(students.length).toBe(0);
+    });
 
-//   describe('The age field', () => {
-//     let ageControl: AbstractControl;
+    it('should add a student when addStudent() is called', () => {
+      addFamilyComponent.addStudent();
+      const students = addFamilyComponent.students;
 
-//     beforeEach(() => {
-//       ageControl = addFamilyComponent.addFamilyForm.controls.age;
-//     });
+      expect(students.length).toBe(1);
+      expect(students.at(0)).toBeTruthy();
+      expect(students.at(0) instanceof FormGroup).toBeTrue();
+    });
 
-//     it('should not allow empty ages', () => {
-//       ageControl.setValue('');
-//       expect(ageControl.valid).toBeFalsy();
-//     });
+    it('when all required fields are valid, the the whole form should be valid', () => {
+      addFamilyForm.controls.guardianName.setValue('Chris Smith');
+      addFamilyForm.controls.address.setValue('123 Avenue');
+      addFamilyForm.controls.timeSlot.setValue('9:00-10:00');
+      addFamilyForm.controls.email.setValue('csmith@email.com');
 
-//     it('should be fine with "27"', () => {
-//       ageControl.setValue('27');
-//       expect(ageControl.valid).toBeTruthy();
-//     });
+      addFamilyComponent.addStudent();
+      const student = addFamilyComponent.students.at(0);
 
-//     it('should fail on ages that are too low', () => {
-//       ageControl.setValue('14');
-//       expect(ageControl.valid).toBeFalsy();
-//       expect(ageControl.hasError('min')).toBeTruthy();
-//     });
+      student.get('name')!.setValue('Jimmy');
+      student.get('grade')!.setValue('3');
+      student.get('school')!.setValue('Morris Elementary');
 
-//     it('should fail on negative ages', () => {
-//       ageControl.setValue('-27');
-//       expect(ageControl.valid).toBeFalsy();
-//       expect(ageControl.hasError('min')).toBeTruthy();
-//     });
+      expect(addFamilyForm.valid).toBeTrue();
+    });
 
-//     // In the real world, you'd want to be pretty careful about
-//     // setting upper limits on things like ages.
-//     it('should fail on ages that are too high', () => {
-//       ageControl.setValue(201);
-//       expect(ageControl.valid).toBeFalsy();
-//       // I have no idea why I have to use a lower case 'l' here
-//       // when it's an upper case 'L' in `Validators.maxLength(2)`.
-//       // But I apparently do.
-//       expect(ageControl.hasError('max')).toBeTruthy();
-//     });
+    //test student name input
+    it('should validate student name', () => {
+      addFamilyComponent.addStudent();
+      const student = addFamilyComponent.students.at(0);
 
-//     it('should not allow an age to contain a decimal point', () => {
-//       ageControl.setValue(27.5);
-//       expect(ageControl.valid).toBeFalsy();
-//       expect(ageControl.hasError('pattern')).toBeTruthy();
-//     });
-//   });
+      //name should not be valid if there is no input
+      const name = student.get('name')!;
+      name.setValue('');
+      expect(name.valid).toBeFalse();
+      expect(name.hasError('required')).toBeTrue();
 
-//   describe('The company field', () => {
-//     it('should allow empty values', () => {
-//       const companyControl = addFamilyForm.controls.company;
-//       companyControl.setValue('');
-//       expect(companyControl.valid).toBeTruthy();
-//     });
-//   });
+      //name should not be valid unless there is more than one character in input
+      name.setValue('A');
+      expect(name.valid).toBeFalse();
+      expect(name.hasError('minlength')).toBeTrue();
 
-//   describe('The email field', () => {
-//     let emailControl: AbstractControl;
+      //when set to "Lilly" the code should recognize this name as a valid input
+      name.setValue('Lilly');
+      expect(name.valid).toBeTrue();
+    });
 
-//     beforeEach(() => {
-//       emailControl = addFamilyComponent.addFamilyForm.controls.email;
-//     });
+    //test grade input
+    it('should validate student grade or integer and "K" or "k"', () => {
+      addFamilyComponent.addStudent();
+      const student = addFamilyComponent.students.at(0);
 
-//     it('should not allow empty values', () => {
-//       emailControl.setValue('');
-//       expect(emailControl.valid).toBeFalsy();
-//       expect(emailControl.hasError('required')).toBeTruthy();
-//     });
+      //should not be valid without input
+      const grade = student.get('grade')!;
+      grade.setValue('');
+      expect(grade.valid).toBeFalse();
+      expect(grade.hasError('required')).toBeTrue();
 
-//     it('should accept legal emails', () => {
-//       emailControl.setValue('conniestewart@ohmnet.com');
-//       expect(emailControl.valid).toBeTruthy();
-//     });
+      //should not be a valid input
+      grade.setValue('abc');
+      expect(grade.valid).toBeFalse();
+      expect(grade.hasError('pattern')).toBeTrue();
 
-//     it('should fail without @', () => {
-//       emailControl.setValue('conniestewart');
-//       expect(emailControl.valid).toBeFalsy();
-//       expect(emailControl.hasError('email')).toBeTruthy();
-//     });
-//   });
+      //mixed values are invalid
+      grade.setValue('k1');
+      expect(grade.valid).toBeFalse();
+      expect(grade.hasError('pattern')).toBeTrue();
 
-//   describe('The role field', () => {
-//     let roleControl: AbstractControl;
+      //integers are valid inputs
+      grade.setValue('5');
+      expect(grade.valid).toBeTrue();
 
-//     beforeEach(() => {
-//       roleControl = addFamilyForm.controls.role;
-//     });
+      //"k" should be a valid input
+      grade.setValue('k');
+      expect(grade.valid).toBeTrue();
 
-//     it('should not allow empty values', () => {
-//       roleControl.setValue('');
-//       expect(roleControl.valid).toBeFalsy();
-//       expect(roleControl.hasError('required')).toBeTruthy();
-//     });
+      //"K" should be a valid input
+      grade.setValue('K');
+      expect(grade.valid).toBeTrue();
+    });
 
-//     it('should allow "admin"', () => {
-//       roleControl.setValue('admin');
-//       expect(roleControl.valid).toBeTruthy();
-//     });
+    //test school input
+    it('should validate student school', () => {
+      addFamilyComponent.addStudent();
+      const student = addFamilyComponent.students.at(0);
 
-//     it('should allow "editor"', () => {
-//       roleControl.setValue('editor');
-//       expect(roleControl.valid).toBeTruthy();
-//     });
+      const school = student.get('school')!;
+      school.setValue('');
+      expect(school.valid).toBeFalse();
+      expect(school.hasError('required')).toBeTrue();
 
-//     it('should allow "viewer"', () => {
-//       roleControl.setValue('viewer');
-//       expect(roleControl.valid).toBeTruthy();
-//     });
+      school.setValue('A');
+      expect(school.valid).toBeFalse();
+      expect(school.hasError('minlength')).toBeTrue();
 
-//     it('should not allow "Supreme Overlord"', () => {
-//       roleControl.setValue('Supreme Overlord');
-//       expect(roleControl.valid).toBeFalsy();
-//     });
-//   });
+      school.setValue('Lincoln Elementary');
+      expect(school.valid).toBeTrue();
+    });
 
-//   describe('getErrorMessage()', () => {
-//     it('should return the correct error message', () => {
-//       // The type statement is needed to ensure that `controlName` isn't just any
-//       // random string, but rather one of the keys of the `addFamilyValidationMessages`
-//       // map in the component.
-//       let controlName: keyof typeof addFamilyComponent.addFamilyValidationMessages = 'name';
-//       addFamilyComponent.addFamilyForm.get(controlName).setErrors({'required': true});
-//       expect(addFamilyComponent.getErrorMessage(controlName)).toEqual('Name is required');
+  });
 
-//       // We don't need the type statement here because we're not using the
-//       // same (previously typed) variable. We could use a `let` and the type statement
-//       // if we wanted to create a new variable, though.
-//       controlName = 'email';
-//       addFamilyComponent.addFamilyForm.get(controlName).setErrors({'required': true});
-//       expect(addFamilyComponent.getErrorMessage(controlName)).toEqual('Email is required');
+  describe('The address field', () => {
+    let addressControl: AbstractControl;
 
-//       controlName = 'email';
-//       addFamilyComponent.addFamilyForm.get(controlName).setErrors({'email': true});
-//       expect(addFamilyComponent.getErrorMessage(controlName)).toEqual('Email must be formatted properly');
-//     });
+    beforeEach(() => {
+      addressControl = addFamilyComponent.addFamilyForm.controls.address;
+    });
 
-//     it('should return "Unknown error" if no error message is found', () => {
-//       // The type statement is needed to ensure that `controlName` isn't just any
-//       // random string, but rather one of the keys of the `addFamilyValidationMessages`
-//       // map in the component.
-//       const controlName: keyof typeof addFamilyComponent.addFamilyValidationMessages = 'name';
-//       addFamilyComponent.addFamilyForm.get(controlName).setErrors({'unknown': true});
-//       expect(addFamilyComponent.getErrorMessage(controlName)).toEqual('Unknown error');
-//     });
-//   });
+    it('should not allow empty addresses', () => {
+      addressControl.setValue('');
+      expect(addressControl.valid).toBeFalsy();
+    });
+
+    it('should allow numbers and letters to input', () => {
+      addressControl.setValue('123 Avenue');
+      expect(addressControl.valid).toBeTruthy();
+    });
+  });
+
+  //   describe('The company field', () => {
+  //     it('should allow empty values', () => {
+  //       const companyControl = addFamilyForm.controls.company;
+  //       companyControl.setValue('');
+  //     expect(companyControl.valid).toBeTruthy();
+  //   });
+  // });
+
+  describe('The email field', () => {
+    let emailControl: AbstractControl;
+
+    beforeEach(() => {
+      emailControl = addFamilyComponent.addFamilyForm.controls.email;
+    });
+
+    it('should not allow empty values', () => {
+      emailControl.setValue(null);
+      expect(emailControl.valid).toBeFalsy();
+      expect(emailControl.hasError('required')).toBeTruthy();
+    });
+
+    it('should accept legal emails', () => {
+      emailControl.setValue('conniestewart@ohmnet.com');
+      expect(emailControl.valid).toBeTruthy();
+    });
+
+    it('should fail without @', () => {
+      emailControl.setValue('conniestewart');
+      expect(emailControl.valid).toBeFalsy();
+      expect(emailControl.hasError('email')).toBeTruthy();
+    });
+  });
+
+  describe('getErrorMessage()', () => {
+    it('should return the correct error message', () => {
+      // The type statement is needed to ensure that `controlName` isn't just any
+      // random string, but rather one of the keys of the `addFamilyValidationMessages`
+      // map in the component.
+      let controlName: keyof typeof addFamilyComponent.addFamilyValidationMessages = 'guardianName';
+      addFamilyComponent.addFamilyForm.get(controlName).setErrors({'required': true});
+      expect(addFamilyComponent.getErrorMessage(controlName)).toEqual('Guardian name is required');
+
+      // We don't need the type statement here because we're not using the
+      // same (previously typed) variable. We could use a `let` and the type statement
+      // if we wanted to create a new variable, though.
+      controlName = 'email';
+      addFamilyComponent.addFamilyForm.get(controlName).setErrors({'required': true});
+      expect(addFamilyComponent.getErrorMessage(controlName)).toEqual('Email is required');
+
+      controlName = 'email';
+      addFamilyComponent.addFamilyForm.get(controlName).setErrors({'email': true});
+      expect(addFamilyComponent.getErrorMessage(controlName)).toEqual('Email must be formatted properly');
+    });
+
+    it('should return "Unknown error" if no error message is found', () => {
+      // The type statement is needed to ensure that `controlName` isn't just any
+      // random string, but rather one of the keys of the `addFamilyValidationMessages`
+      // map in the component.
+      const controlName: keyof typeof addFamilyComponent.addFamilyValidationMessages = 'guardianName';
+      addFamilyComponent.addFamilyForm.get(controlName).setErrors({'unknown': true});
+      expect(addFamilyComponent.getErrorMessage(controlName)).toEqual('Unknown error');
+    });
+  });
+});
+
+// A lot of these tests mock the service using an approach like this doc example
+// https://angular.dev/guide/testing/components-scenarios#more-async-tests
+// The same way that the following allows the mock to be used:
+//
+// TestBed.configureTestingModule({
+//   providers: [{provide: TwainQuotes, useClass: MockTwainQuotes}], // A (more-async-tests) - provide + use class of the mock
 // });
+// const twainQuotes = TestBed.inject(TwainQuotes) as MockTwainQuotes; // B (more-async-tests) - inject the service as the mock
+//
+// Is how these tests work with the mock then being injected in
 
-// // A lot of these tests mock the service using an approach like this doc example
-// // https://angular.dev/guide/testing/components-scenarios#more-async-tests
-// // The same way that the following allows the mock to be used:
-// //
-// // TestBed.configureTestingModule({
-// //   providers: [{provide: TwainQuotes, useClass: MockTwainQuotes}], // A (more-async-tests) - provide + use class of the mock
-// // });
-// // const twainQuotes = TestBed.inject(TwainQuotes) as MockTwainQuotes; // B (more-async-tests) - inject the service as the mock
-// //
-// // Is how these tests work with the mock then being injected in
+describe('AddFamilyComponent#submitForm()', () => {
+  let component: AddFamilyComponent;
+  let fixture: ComponentFixture<AddFamilyComponent>;
+  let familyService: FamilyService;
+  let location: Location;
 
-// describe('AddFamilyComponent#submitForm()', () => {
-//   let component: AddFamilyComponent;
-//   let fixture: ComponentFixture<AddFamilyComponent>;
-//   let familyService: FamilyService;
-//   let location: Location;
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [
+        AddFamilyComponent,
+        MatSnackBarModule
+      ],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        {provide: FamilyService, useClass: MockFamilyService }, // A (more-async-tests) - provide + use class of the mock
+        provideRouter([
+          { path: 'family/:id', component: DummyComponent }
+        ])
+      ]
+    }).compileComponents().catch(error => {
+      expect(error).toBeNull();
+    });
+  });
 
-//   beforeEach(() => {
-//     TestBed.configureTestingModule({
-//       imports: [
-//         AddFamilyComponent,
-//         MatSnackBarModule
-//       ],
-//       providers: [
-//         provideHttpClient(),
-//         provideHttpClientTesting(),
-//         {provide: FamilyService, useClass: MockFamilyService }, // A (more-async-tests) - provide + use class of the mock
-//         provideRouter([
-//           { path: 'familys/1', component: FamilyProfileComponent }
-//         ])]
-//     }).compileComponents().catch(error => {
-//       expect(error).toBeNull();
-//     });
-//   });
+  beforeEach(() => {
+    fixture = TestBed.createComponent(AddFamilyComponent);
+    component = fixture.componentInstance;
+    familyService = TestBed.inject(FamilyService); // B (more-async-tests) - inject the service as the mock
+    location = TestBed.inject(Location);
+    // We need to inject the router and the HttpTestingController, but
+    // never need to use them. So, we can just inject them into the TestBed
+    // and ignore the returned values.
+    TestBed.inject(Router);
+    TestBed.inject(HttpTestingController);
+    fixture.detectChanges();
+  });
 
-//   beforeEach(() => {
-//     fixture = TestBed.createComponent(AddFamilyComponent);
-//     component = fixture.componentInstance;
-//     familyService = TestBed.inject(FamilyService); // B (more-async-tests) - inject the service as the mock
-//     location = TestBed.inject(Location);
-//     // We need to inject the router and the HttpTestingController, but
-//     // never need to use them. So, we can just inject them into the TestBed
-//     // and ignore the returned values.
-//     TestBed.inject(Router);
-//     TestBed.inject(HttpTestingController);
-//     fixture.detectChanges();
-//   });
+  beforeEach(() => {
+    // Set up the form with valid values.
+    // We don't actually have to do this, but it does mean that when we
+    // check that `submitForm()` is called with the right arguments below,
+    // we have some reason to believe that that wasn't passing "by accident".
+    component.addFamilyForm.controls.guardianName.setValue('Chris Smith');
+    component.addFamilyForm.controls.address.setValue('123 Avenue');
+    component.addFamilyForm.controls.timeSlot.setValue('9:00-10:00');
+    component.addFamilyForm.controls.email.setValue('csmith@email.com');
+    //component.addFamilyForm.controls.student.setValue('admin');
+  });
 
-//   beforeEach(() => {
-//     // Set up the form with valid values.
-//     // We don't actually have to do this, but it does mean that when we
-//     // check that `submitForm()` is called with the right arguments below,
-//     // we have some reason to believe that that wasn't passing "by accident".
-//     component.addFamilyForm.controls.name.setValue('Chris Smith');
-//     component.addFamilyForm.controls.age.setValue(27);
-//     component.addFamilyForm.controls.company.setValue('Ohmnet');
-//     component.addFamilyForm.controls.email.setValue('this@that.com');
-//     component.addFamilyForm.controls.role.setValue('admin');
-//   });
+  // The `fakeAsync()` wrapper is necessary because the `submitForm()` method
+  // calls `navigate()` on the router, which is an asynchronous operation, and we
+  // need to wait (using `tick()`) for that to complete before we can check the
+  // new location.
+  it('should call addFamily() and handle success response', fakeAsync(() => {
+    // "Spy" on the `.addFamily()` method in the family service. Here we basically
+    // intercept any calls to that method and return a canned response ('1').
+    // This means we don't have to worry about the details of the `.addFamily()`,
+    // or actually have a server running to receive the HTTP request that
+    // `.addFamily()` would typically generate. Note also that the particular values
+    // we set up in our form (e.g., 'Chris Smith') are actually ignored
+    // thanks to our `spyOn()` call.
+    const addFamilySpy = spyOn(familyService, 'addFamily').and.returnValue(of('1'));
+    component.submitForm();
+    // Check that `.addFamily()` was called with the form's values which we set
+    // up above.
+    expect(addFamilySpy).toHaveBeenCalledWith(component.addFamilyForm.value);
+    // Wait for the router to navigate to the new page. This is necessary since
+    // navigation is an asynchronous operation.
+    tick();
+    // Now we can check that the router actually navigated to the right place.
+    expect(location.path()).toBe('/families/1');
+    // Flush any pending microtasks. This is necessary to ensure that the
+    // timer generated by `fakeAsync()` completes before the test finishes.
+    flush();
+  }));
 
-//   // The `fakeAsync()` wrapper is necessary because the `submitForm()` method
-//   // calls `navigate()` on the router, which is an asynchronous operation, and we
-//   // need to wait (using `tick()`) for that to complete before we can check the
-//   // new location.
-//   it('should call addFamily() and handle success response', fakeAsync(() => {
-//     // "Spy" on the `.addFamily()` method in the family service. Here we basically
-//     // intercept any calls to that method and return a canned response ('1').
-//     // This means we don't have to worry about the details of the `.addFamily()`,
-//     // or actually have a server running to receive the HTTP request that
-//     // `.addFamily()` would typically generate. Note also that the particular values
-//     // we set up in our form (e.g., 'Chris Smith') are actually ignored
-//     // thanks to our `spyOn()` call.
-//     const addFamilySpy = spyOn(familyService, 'addFamily').and.returnValue(of('1'));
-//     component.submitForm();
-//     // Check that `.addFamily()` was called with the form's values which we set
-//     // up above.
-//     expect(addFamilySpy).toHaveBeenCalledWith(component.addFamilyForm.value);
-//     // Wait for the router to navigate to the new page. This is necessary since
-//     // navigation is an asynchronous operation.
-//     tick();
-//     // Now we can check that the router actually navigated to the right place.
-//     expect(location.path()).toBe('/familys/1');
-//     // Flush any pending microtasks. This is necessary to ensure that the
-//     // timer generated by `fakeAsync()` completes before the test finishes.
-//     flush();
-//   }));
-
-//   // This doesn't need `fakeAsync()`, `tick()`, or `flush() because the
-//   // error case doesn't navigate to another page. It just displays an error
-//   // message in the snackbar. So, we don't need to worry about the asynchronous
-//   // nature of navigation.
-//   it('should call addFamily() and handle error response', () => {
-//     // Save the original path so we can check that it doesn't change.
-//     const path = location.path();
-//     // A canned error response to be returned by the spy.
-//     const errorResponse = { status: 500, message: 'Server error' };
-//     // "Spy" on the `.addFamily()` method in the family service. Here we basically
-//     // intercept any calls to that method and return the error response
-//     // defined above.
-//     const addFamilySpy = spyOn(familyService, 'addFamily')
-//       .and
-//       .returnValue(throwError(() => errorResponse));
-//     component.submitForm();
-//     // Check that `.addFamily()` was called with the form's values which we set
-//     // up above.
-//     expect(addFamilySpy).toHaveBeenCalledWith(component.addFamilyForm.value);
-//     // Confirm that we're still at the same path.
-//     expect(location.path()).toBe(path);
-//   });
+  // This doesn't need `fakeAsync()`, `tick()`, or `flush() because the
+  // error case doesn't navigate to another page. It just displays an error
+  // message in the snackbar. So, we don't need to worry about the asynchronous
+  // nature of navigation.
+  it('should call addFamily() and handle error response', () => {
+    // Save the original path so we can check that it doesn't change.
+    const path = location.path();
+    // A canned error response to be returned by the spy.
+    const errorResponse = { status: 500, message: 'Server error' };
+    // "Spy" on the `.addFamily()` method in the family service. Here we basically
+    // intercept any calls to that method and return the error response
+    // defined above.
+    const addFamilySpy = spyOn(familyService, 'addFamily')
+      .and
+      .returnValue(throwError(() => errorResponse));
+    component.submitForm();
+    // Check that `.addFamily()` was called with the form's values which we set
+    // up above.
+    expect(addFamilySpy).toHaveBeenCalledWith(component.addFamilyForm.value);
+    // Confirm that we're still at the same path.
+    expect(location.path()).toBe(path);
+  });
 
 
-//   it('should call addFamily() and handle error response for illegal family', () => {
-//     // Save the original path so we can check that it doesn't change.
-//     const path = location.path();
-//     // A canned error response to be returned by the spy.
-//     const errorResponse = { status: 400, message: 'Illegal family error' };
-//     // "Spy" on the `.addFamily()` method in the family service. Here we basically
-//     // intercept any calls to that method and return the error response
-//     // defined above.
-//     const addFamilySpy = spyOn(familyService, 'addFamily')
-//       .and
-//       .returnValue(throwError(() => errorResponse));
-//     component.submitForm();
-//     // Check that `.addFamily()` was called with the form's values which we set
-//     // up above.
-//     expect(addFamilySpy).toHaveBeenCalledWith(component.addFamilyForm.value);
-//     // Confirm that we're still at the same path.
-//     expect(location.path()).toBe(path);
-//   });
+  it('should call addFamily() and handle error response for illegal family', () => {
+    // Save the original path so we can check that it doesn't change.
+    const path = location.path();
+    // A canned error response to be returned by the spy.
+    const errorResponse = { status: 400, message: 'Illegal family error' };
+    // "Spy" on the `.addFamily()` method in the family service. Here we basically
+    // intercept any calls to that method and return the error response
+    // defined above.
+    const addFamilySpy = spyOn(familyService, 'addFamily')
+      .and
+      .returnValue(throwError(() => errorResponse));
+    component.submitForm();
+    // Check that `.addFamily()` was called with the form's values which we set
+    // up above.
+    expect(addFamilySpy).toHaveBeenCalledWith(component.addFamilyForm.value);
+    // Confirm that we're still at the same path.
+    expect(location.path()).toBe(path);
+  });
 
-//   it('should call addFamily() and handle unexpected error response if it arises', () => {
-//     // Save the original path so we can check that it doesn't change.
-//     const path = location.path();
-//     // A canned error response to be returned by the spy.
-//     const errorResponse = { status: 404, message: 'Not found' };
-//     // "Spy" on the `.addFamily()` method in the family service. Here we basically
-//     // intercept any calls to that method and return the error response
-//     // defined above.
-//     const addFamilySpy = spyOn(familyService, 'addFamily')
-//       .and
-//       .returnValue(throwError(() => errorResponse));
-//     component.submitForm();
-//     // Check that `.addFamily()` was called with the form's values which we set
-//     // up above.
-//     expect(addFamilySpy).toHaveBeenCalledWith(component.addFamilyForm.value);
-//     // Confirm that we're still at the same path.
-//     expect(location.path()).toBe(path);
-//   });
-// });
+  it('should call addFamily() and handle unexpected error response if it arises', () => {
+    // Save the original path so we can check that it doesn't change.
+    const path = location.path();
+    // A canned error response to be returned by the spy.
+    const errorResponse = { status: 404, message: 'Not found' };
+    // "Spy" on the `.addFamily()` method in the family service. Here we basically
+    // intercept any calls to that method and return the error response
+    // defined above.
+    const addFamilySpy = spyOn(familyService, 'addFamily')
+      .and
+      .returnValue(throwError(() => errorResponse));
+    component.submitForm();
+    // Check that `.addFamily()` was called with the form's values which we set
+    // up above.
+    expect(addFamilySpy).toHaveBeenCalledWith(component.addFamilyForm.value);
+    // Confirm that we're still at the same path.
+    expect(location.path()).toBe(path);
+  });
+});

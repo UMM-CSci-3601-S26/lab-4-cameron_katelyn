@@ -39,4 +39,10 @@ export class FamilyService {
       params: httpParams,
     });
   }
+
+  exportFamilies(): Observable<string> {
+    return this.httpClient.get(`${this.familyUrl}/export`, {
+      responseType: 'text'
+    });
+  }
 }

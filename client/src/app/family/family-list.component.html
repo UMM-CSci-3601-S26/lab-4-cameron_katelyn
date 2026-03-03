@@ -36,6 +36,11 @@
   }
 </div>
 
+
+<button mat-raised-button (click)="downloadCSV()">
+  Export CSV
+</button>
+
 <button mat-fab class="add-family-fab" matTooltip="Add Family" matTooltipPosition="left" routerLink="/family/new"
   data-test="addFamilyButton">
   <mat-icon class="md-24" aria-label="Add Family">add</mat-icon>

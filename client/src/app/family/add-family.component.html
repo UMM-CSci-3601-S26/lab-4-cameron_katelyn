@@ -9,9 +9,9 @@
           <div class="flex-col">
             <mat-form-field>
               <mat-label>Guardian Name</mat-label>
-              <input matInput formControlName="guardian name"
+              <input matInput formControlName="guardianName"
                 required>
-              @if (formControlHasError('guardian name')) {
+              @if (formControlHasError('guardianName')) {
                 <mat-error data-test="guardianNameError">
                   {{getErrorMessage('guardianName')}}
                 </mat-error>
@@ -29,12 +29,6 @@
               }
             </mat-form-field>
 
-            <!-- <mat-form-field>
-              <mat-label>Company</mat-label>
-              <input matInput formControlName="company">
-              <mat-hint>Not required in Angular for demonstration, still required by server</mat-hint>
-            </mat-form-field> -->
-
             <mat-form-field>
               <mat-label>Address</mat-label>
               <input matInput type="address"
@@ -46,19 +40,52 @@
               }
             </mat-form-field>
 
-            <!-- <mat-form-field>
-              <mat-label>Role</mat-label>
-              <mat-select required formControlName="role">
-                <mat-option value="admin">Admin</mat-option>
-                <mat-option value="editor">Editor</mat-option>
-                <mat-option value="viewer">Viewer</mat-option>
-              </mat-select>
-              @if (formControlHasError('role')) {
-                <mat-error data-test="roleError">
-                  {{getErrorMessage('role')}}
+            <mat-form-field>
+              <mat-label>timeSlot</mat-label>
+              <input matInput type="timeSlot"
+                formControlName="timeSlot" required>
+              @if (formControlHasError('timeSlot')) {
+                <mat-error data-test="timeSlotError">
+                  {{getErrorMessage('timeSlot')}}
                 </mat-error>
               }
-            </mat-form-field> -->
+            </mat-form-field>
+
+            <h3>Students</h3>
+
+            <div formArrayName="students">
+              @for (student of students.controls; track $index; let i = $index) {
+                <div [formGroupName]="i">
+
+                  <mat-form-field>
+                    <mat-label>Name</mat-label>
+                    <input matInput formControlName="name">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Grade</mat-label>
+                    <input matInput formControlName="grade">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>School</mat-label>
+                    <input matInput formControlName="school">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Requested Supplies</mat-label>
+                    <input matInput formControlName="requestedSupplies">
+                  </mat-form-field>
+
+                  <button type="button" (click)="removeStudent(i)">
+                    Remove Student
+                  </button>
+
+                </div>
+              }
+            </div>
+
+    <button type="button" (click)="addStudent()">Add Student</button>
           </div>
 
         </mat-card-content>

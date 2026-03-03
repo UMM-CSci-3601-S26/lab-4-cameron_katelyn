@@ -2,6 +2,7 @@ package umm3601.family;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bson.UuidRepresentation;
@@ -21,6 +22,7 @@ import io.javalin.http.HttpStatus;
 import static com.mongodb.client.model.Filters.eq;
 
 import umm3601.Controller;
+import umm3601.family.Family.StudentInfo;
 
 /* FamilyController Contains the Following:
 - getFamilies()
@@ -28,6 +30,7 @@ import umm3601.Controller;
 - addNewFamily()
 - deleteFamily() /By ID/
 - getDashboardStats() /Has its own API/
+- exportFamiliesAsCSV()
 */
 
 /* Notes:
@@ -136,6 +139,32 @@ public class FamilyController implements Controller {
     ctx.json(result);
   }
 
+  public void exportFamiliesAsCSV(Context ctx) {
+    List<Family> families = familyCollection.find().into(new ArrayList<>());
+
+    StringBuilder csv = new StringBuilder();
+
+    // Header
+    csv.append("Guardian Name,Email,Address,Time Slot,Number of Students\n");
+
+    for (Family family : families) {
+
+      int studentCount = family.students != null ? family.students.size() : 0;
+
+      csv.append(String.format("\"%s\",\"%s\",\"%s\",\"%s\",%d\n",
+        family.guardianName,
+        family.email,
+        family.address,
+        family.timeSlot,
+        studentCount
+      ));
+    }
+
+    ctx.contentType("text/csv");
+    ctx.header("Content-Disposition", "attachment; filename=families.csv");
+    ctx.result(csv.toString());
+  }
+
   @Override
   public void addRoutes(Javalin server) {
     server.get(API_FAMILY, this::getFamilies);
@@ -143,5 +172,6 @@ public class FamilyController implements Controller {
     server.get(API_FAMILY_BY_ID, this::getFamily);
     server.delete(API_FAMILY_BY_ID, this::deleteFamily);
     server.get(API_DASHBOARD, this::getDashboardStats);
+    server.get("/api/family/export", this::exportFamiliesAsCSV);
   }
 }
