@@ -48,16 +48,23 @@ describe('Family list', () => {
     expect(families[0].guardianName).toBe('John Johnson');
   });
 
-  //test checks that when calling downloadCSV(), the program invokes spy,
-  //implying that exportFamilies() operates as expected
+  //Does this not provide any coverage for the CSV test?????
+  it('exportFamilies() should be called when CSV is downloaded', () => {
+    spyOn(familyService, 'exportFamilies').and.returnValue(of('csv-data'));
 
-//needs work still:
-//   it('exportFamilies() should be called when CSV is downloaded', () => {
-//     const spy = spyOn(familyService, 'exportFamilies').and.returnValue(of('csv-data'));
-//     familyList.downloadCSV();
-//     expect(spy).toHaveBeenCalled();
-//   //because downloadCSV() invokes spy, was can confirm that it was called
-//   });
+    spyOn(URL, 'createObjectURL').and.returnValue('blob-url');
+    spyOn(URL, 'revokeObjectURL');
+
+    const click = jasmine.createSpy('click');
+    spyOn(document, 'createElement').and.returnValue({ click } as undefined);
+
+    familyList.downloadCSV();
+    expect(familyService.exportFamilies).toHaveBeenCalled();
+    expect(document.createElement).toHaveBeenCalledWith('a');
+    expect(click).toHaveBeenCalled();
+    expect(URL.createObjectURL).toHaveBeenCalled();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob-url');
+  });
 });
 
 

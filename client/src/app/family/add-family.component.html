@@ -60,6 +60,11 @@
                   <mat-form-field>
                     <mat-label>Name</mat-label>
                     <input matInput formControlName="name">
+                    @if (formControlHasError('timeSlot')) {
+                    <mat-error data-test="timeSlotError">
+                    {{getErrorMessage('timeSlot')}}
+                </mat-error>
+              }
                   </mat-form-field>
 
                   <mat-form-field>

@@ -428,6 +428,15 @@ describe('AddFamilyComponent#submitForm()', () => {
   });
 
   it('should transform requestedSupplies string into trimmed array', () => {
+    const studentsArray = component.addFamilyForm.get('students') as FormArray;
+
+    studentsArray.push(new FormGroup({
+      name: new FormControl(''),
+      grade: new FormControl(''),
+      school: new FormControl(''),
+      requestedSupplies: new FormControl('')
+    }));
+
     component.addFamilyForm.patchValue({
       students: [{
         name: 'John',
@@ -451,9 +460,7 @@ describe('AddFamilyComponent#submitForm()', () => {
   });
 
   it('should transform requestedSupplies string into trimmed array', () => {
-
     const studentsArray = component.addFamilyForm.get('students') as FormArray;
-
     studentsArray.push(
       new FormGroup({
         name: new FormControl('John'),
@@ -462,20 +469,15 @@ describe('AddFamilyComponent#submitForm()', () => {
         requestedSupplies: new FormControl('pencil, eraser , notebook ')
       })
     );
-
     const addFamilySpy = spyOn(familyService, 'addFamily')
       .and.returnValue(of('1'));
-
     component.submitForm();
-
     expect(addFamilySpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
         students: [
           jasmine.objectContaining({
             requestedSupplies: ['pencil', 'eraser', 'notebook']
-          })
-        ]
-      })
-    );
+          })]
+      }));
   });
 });

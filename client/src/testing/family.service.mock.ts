@@ -120,4 +120,11 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
     return of('1');
   }
 
+  deleteFamily(id: string): Observable<string> {
+    return of('1');
+  }
+
+  exportFamilies(): Observable<string> {
+    return of('csv-data');
+  }
 }
