@@ -210,7 +210,7 @@ class FamilyControllerSpec {
   }
 
   @Test
-  void getUserWithNonexistentId() throws IOException {
+  void getFamiliesWithNonexistentId() throws IOException {
     String id = "588935f5c668650dc77df581";
     when(ctx.pathParam("id")).thenReturn(id);
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { AppComponent } from 'src/app/app.component';
-import { DashboardStats, Family } from '../app/family/family';
+import { Family } from '../app/family/family';
 import { FamilyService } from 'src/app/family/family.service';
 
 @Injectable({

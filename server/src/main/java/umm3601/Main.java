@@ -6,7 +6,6 @@ import com.mongodb.client.MongoDatabase;
 import umm3601.inventory.InventoryController;
 import umm3601.supply.SupplyController;
 import umm3601.family.FamilyController;
-import umm3601.user.UserController;
 
 public class Main {
 
@@ -32,7 +31,6 @@ public class Main {
 
   static Controller[] getControllers(MongoDatabase database) {
     Controller[] controllers = new Controller[] {
-      new UserController(database),
       new SupplyController(database),
       new InventoryController(database),
       new FamilyController(database)

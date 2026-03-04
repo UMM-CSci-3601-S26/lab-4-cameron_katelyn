@@ -16,6 +16,11 @@
         Families
       </a>
 
+      <a mat-list-item routerLink="/inventory" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+        <mat-icon matListItemIcon>list_alt</mat-icon>
+        Inventory
+      </a>
+
       <a mat-list-item routerLink="/dashboard" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
         <mat-icon matListItemIcon>dashboard</mat-icon>
         Dashboard
