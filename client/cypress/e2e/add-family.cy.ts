@@ -78,6 +78,8 @@ describe('Add family', () => {
     // Entering a valid email should remove the error.
     page.getFormField('email').clear().type('family@example.com').blur();
     cy.get('[data-test=emailError]').should('not.exist');
+
+    //need to test validation and behavior of student inputs: name, grade, school, supplies
   });
 
   describe('Adding a new family', () => {
@@ -88,33 +90,32 @@ describe('Add family', () => {
     it('Should go to the right page, and have the right info', () => {
       const family: Family = {
         _id: null,
-        name: 'Test Family',
-        age: 30,
-        company: 'Test Company',
-        email: 'test@example.com',
-        role: 'editor',
+        guardianName: 'Test Family',
+        address: '123 Street',
+        timeSlot: '7:00-8:00',
+        email: 'test@email.com',
+        students: [
+          {
+            name: '1',
+            grade: '6',
+            school: "Morris High School",
+            requestedSupplies: []
+          },
+          {
+            name: '2',
+            grade: '7',
+            school: "Morris High School",
+            requestedSupplies: ['headphones']
+          },
+          {
+            name: '3',
+            grade: '8',
+            school: "Morris Elementary",
+            requestedSupplies: ['backpack', 'markers']
+          },
+        ]
       };
 
-      // The `page.addFamily(family)` call ends with clicking the "Add Family"
-      // button on the interface. That then leads to the client sending an
-      // HTTP request to the server, which has to process that request
-      // (including making calls to add the family to the database and wait
-      // for those to respond) before we get a response and can update the GUI.
-      // By calling `cy.intercept()` we're saying we want Cypress to "notice"
-      // when we go to `/api/families`. The `AddFamilyComponent.submitForm()` method
-      // routes to `/api/families/{MongoDB-ID}` if the REST request to add the family
-      // succeeds, and that routing will get "noticed" by the Cypress because
-      // of the `cy.intercept()` call.
-      //
-      // The `.as('addFamily')` call basically gives that event a name (`addFamily`)
-      // which we can use in things like `cy.wait()` to say which event or events
-      // we want to wait for.
-      //
-      // The `cy.wait('@addFamily')` tells Cypress to wait until we have successfully
-      // routed to `/api/families` before we continue with the following checks. This
-      // hopefully ensures that the server (and database) have completed all their
-      // work, and that we should have a properly formed page on the client end
-      // to check.
       cy.intercept('/api/families').as('addFamily');
       page.addFamily(family);
       cy.wait('@addFamily');

@@ -62,7 +62,7 @@ describe('InventoryService', () => {
     }));
   });
 
-  describe('When getFamilies() is called with parameters, it correctly forms the HTTP request (Javalin/Server filtering)', () => {
+  describe('When getInventory() is called with parameters, it correctly forms the HTTP request (Javalin/Server filtering)', () => {
     /*
       * As in the test of `getFamilies()` that takes in no filters in the params,
       * we really don't care what `getFamilies()` returns in the cases

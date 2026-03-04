@@ -1,0 +1,483 @@
+import { Location } from '@angular/common';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'; //fakeAsync, flush, tick
+import { AbstractControl, FormArray, FormControl, FormGroup } from '@angular/forms';
+import { Router } from '@angular/router'; //provideRouter
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { of, throwError } from 'rxjs'; //of
+import { MockInventoryService } from 'src/testing/inventory.service.mock';
+import { AddInventoryComponent } from './add-inventory.component';
+import { provideHttpClient } from '@angular/common/http';
+import { InventoryService } from './inventory.service';
+
+describe('AddInventoryComponent', () => {
+  let addInventoryComponent: AddInventoryComponent;
+  let addInventoryForm: FormGroup;
+  let fixture: ComponentFixture<AddInventoryComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [
+        AddInventoryComponent,
+        MatSnackBarModule
+      ],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: InventoryService, useClass: MockInventoryService }
+      ]
+    }).compileComponents().catch(error => {
+      expect(error).toBeNull();
+    });
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(AddInventoryComponent);
+    addInventoryComponent = fixture.componentInstance;
+    fixture.detectChanges();
+    addInventoryForm = addInventoryComponent.addInventoryForm;
+    expect(addInventoryForm).toBeDefined();
+    expect(addInventoryForm.controls).toBeDefined();
+  });
+
+  // Not terribly important; if the component doesn't create
+  // successfully that will probably blow up a lot of things.
+  // Including it, though, does give us confidence that our
+  // our component definitions don't have errors that would
+  // prevent them from being successfully constructed.
+  it('should create the component and form', () => {
+    expect(addInventoryComponent).toBeTruthy();
+    expect(addInventoryForm).toBeTruthy();
+  });
+
+  // Confirms that an initial, empty form is *not* valid, so
+  // people can't submit an empty form.
+  it('form should be invalid when empty', () => {
+    expect(addInventoryForm.valid).toBeFalsy();
+  });
+
+  describe('The guardian name field', () => {
+    let guardianNameControl: AbstractControl;
+
+    beforeEach(() => {
+      guardianNameControl = addInventoryComponent.addInventoryForm.controls.guardianName;
+    });
+
+    it('should not allow empty guardian names', () => {
+      guardianNameControl.setValue('');
+      expect(guardianNameControl.valid).toBeFalsy();
+    });
+
+    it('should be fine with "Chris Smith"', () => {
+      guardianNameControl.setValue('Chris Smith');
+      expect(guardianNameControl.valid).toBeTruthy();
+    });
+
+    it('should fail on single character guardian names', () => {
+      guardianNameControl.setValue('x');
+      expect(guardianNameControl.valid).toBeFalsy();
+      expect(guardianNameControl.hasError('minlength')).toBeTruthy();
+    });
+
+    it('should fail on really long guardian names', () => {
+      guardianNameControl.setValue('x'.repeat(100));
+      expect(guardianNameControl.valid).toBeFalsy();
+      expect(guardianNameControl.hasError('maxlength')).toBeTruthy();
+    });
+
+    //   it('should fail if we provide an "existing" guardian name', () => {
+    //     // We're assuming that "abc123" and "123abc" already
+    //     // exist so we disallow them.
+    //     guardianNameControl.setValue('abc123');
+    //     expect(guardianNameControl.valid).toBeFalsy();
+    //     expect(guardianNameControl.hasError('existingName')).toBeTruthy();
+
+    //     guardianNameControl.setValue('123abc');
+    //     expect(guardianNameControl.valid).toBeFalsy();
+    //     expect(guardianNameControl.hasError('existingName')).toBeTruthy();
+    //    });
+  });
+
+  describe('Students FormArray', () => {
+    //confirms input fields are blank
+    it('should start with an empty students array', () => {
+      const students = addInventoryComponent.students;
+      expect(students).toBeDefined();
+      expect(students.length).toBe(0);
+    });
+
+    it('should add a student when addStudent() is called', () => {
+      addInventoryComponent.addStudent();
+      const students = addInventoryComponent.students;
+
+      expect(students.length).toBe(1);
+      expect(students.at(0)).toBeTruthy();
+      expect(students.at(0) instanceof FormGroup).toBeTrue();
+    });
+
+    it('should remove a student when removeStudent() is called', () => {
+      addInventoryComponent.removeStudent(0);
+      const students = addInventoryComponent.students;
+
+      expect(students.length).toBe(0);
+      expect(students.at(0)).toBeFalsy();
+      expect(students.at(0) instanceof FormGroup).toBeFalse();
+    });
+
+    it('when all required fields are valid, the the whole form should be valid', () => {
+      addInventoryForm.controls.guardianName.setValue('Chris Smith');
+      addInventoryForm.controls.address.setValue('123 Avenue');
+      addInventoryForm.controls.timeSlot.setValue('9:00-10:00');
+      addInventoryForm.controls.email.setValue('csmith@email.com');
+
+      addInventoryComponent.addStudent();
+      const student = addInventoryComponent.students.at(0);
+
+      student.get('name')!.setValue('Jimmy');
+      student.get('grade')!.setValue('3');
+      student.get('school')!.setValue('Morris Elementary');
+
+      expect(addInventoryForm.valid).toBeTrue();
+    });
+
+    //test student name input
+    it('should validate student name', () => {
+      addInventoryComponent.addStudent();
+      const student = addInventoryComponent.students.at(0);
+
+      //name should not be valid if there is no input
+      const name = student.get('name')!;
+      name.setValue('');
+      expect(name.valid).toBeFalse();
+      expect(name.hasError('required')).toBeTrue();
+
+      //name should not be valid unless there is more than one character in input
+      name.setValue('A');
+      expect(name.valid).toBeFalse();
+      expect(name.hasError('minlength')).toBeTrue();
+
+      //when set to "Lilly" the code should recognize this name as a valid input
+      name.setValue('Lilly');
+      expect(name.valid).toBeTrue();
+    });
+
+    //test grade input
+    it('should validate student grade or integer and "K" or "k"', () => {
+      addInventoryComponent.addStudent();
+      const student = addInventoryComponent.students.at(0);
+
+      //should not be valid without input
+      const grade = student.get('grade')!;
+      grade.setValue('');
+      expect(grade.valid).toBeFalse();
+      expect(grade.hasError('required')).toBeTrue();
+
+      //should not be a valid input
+      grade.setValue('abc');
+      expect(grade.valid).toBeFalse();
+      expect(grade.hasError('pattern')).toBeTrue();
+
+      //mixed values are invalid
+      grade.setValue('k1');
+      expect(grade.valid).toBeFalse();
+      expect(grade.hasError('pattern')).toBeTrue();
+
+      //integers are valid inputs
+      grade.setValue('5');
+      expect(grade.valid).toBeTrue();
+
+      //"k" should be a valid input
+      grade.setValue('k');
+      expect(grade.valid).toBeTrue();
+
+      //"K" should be a valid input
+      grade.setValue('K');
+      expect(grade.valid).toBeTrue();
+    });
+
+    //test school input
+    it('should validate student school', () => {
+      addInventoryComponent.addStudent();
+      const student = addInventoryComponent.students.at(0);
+
+      const school = student.get('school')!;
+      school.setValue('');
+      expect(school.valid).toBeFalse();
+      expect(school.hasError('required')).toBeTrue();
+
+      school.setValue('A');
+      expect(school.valid).toBeFalse();
+      expect(school.hasError('minlength')).toBeTrue();
+
+      school.setValue('Lincoln Elementary');
+      expect(school.valid).toBeTrue();
+    });
+
+  });
+
+  describe('The address field', () => {
+    let addressControl: AbstractControl;
+
+    beforeEach(() => {
+      addressControl = addInventoryComponent.addInventoryForm.controls.address;
+    });
+
+    it('should not allow empty addresses', () => {
+      addressControl.setValue('');
+      expect(addressControl.valid).toBeFalsy();
+    });
+
+    it('should allow numbers and letters to input', () => {
+      addressControl.setValue('123 Avenue');
+      expect(addressControl.valid).toBeTruthy();
+    });
+  });
+
+  describe('The email field', () => {
+    let emailControl: AbstractControl;
+
+    beforeEach(() => {
+      emailControl = addInventoryComponent.addInventoryForm.controls.email;
+    });
+
+    it('should not allow empty values', () => {
+      emailControl.setValue(null);
+      expect(emailControl.valid).toBeFalsy();
+      expect(emailControl.hasError('required')).toBeTruthy();
+    });
+
+    it('should accept legal emails', () => {
+      emailControl.setValue('conniestewart@ohmnet.com');
+      expect(emailControl.valid).toBeTruthy();
+    });
+
+    it('should fail without @', () => {
+      emailControl.setValue('conniestewart');
+      expect(emailControl.valid).toBeFalsy();
+      expect(emailControl.hasError('email')).toBeTruthy();
+    });
+  });
+
+  describe('getErrorMessage()', () => {
+    it('should return the correct error message', () => {
+      // The type statement is needed to ensure that `controlName` isn't just any
+      // random string, but rather one of the keys of the `addInventoryValidationMessages`
+      // map in the component.
+      let controlName: keyof typeof addInventoryComponent.addInventoryValidationMessages = 'guardianName';
+      addInventoryComponent.addInventoryForm.get(controlName).setErrors({'required': true});
+      expect(addInventoryComponent.getErrorMessage(controlName)).toEqual('Guardian name is required');
+
+      // We don't need the type statement here because we're not using the
+      // same (previously typed) variable. We could use a `let` and the type statement
+      // if we wanted to create a new variable, though.
+      controlName = 'email';
+      addInventoryComponent.addInventoryForm.get(controlName).setErrors({'required': true});
+      expect(addInventoryComponent.getErrorMessage(controlName)).toEqual('Email is required');
+
+      controlName = 'email';
+      addInventoryComponent.addInventoryForm.get(controlName).setErrors({'email': true});
+      expect(addInventoryComponent.getErrorMessage(controlName)).toEqual('Email must be formatted properly');
+    });
+
+    it('should return "Unknown error" if no error message is found', () => {
+      // The type statement is needed to ensure that `controlName` isn't just any
+      // random string, but rather one of the keys of the `addInventoryValidationMessages`
+      // map in the component.
+      const controlName: keyof typeof addInventoryComponent.addInventoryValidationMessages = 'guardianName';
+      addInventoryComponent.addInventoryForm.get(controlName).setErrors({'unknown': true});
+      expect(addInventoryComponent.getErrorMessage(controlName)).toEqual('Unknown error');
+    });
+
+    it('should return an empty string if the validation method is not an array', () => {
+      const result = addInventoryComponent.getErrorMessage('students');
+      expect(result).toBe('');
+    })
+  });
+});
+
+// A lot of these tests mock the service using an approach like this doc example
+// https://angular.dev/guide/testing/components-scenarios#more-async-tests
+// The same way that the following allows the mock to be used:
+//
+// TestBed.configureTestingModule({
+//   providers: [{provide: TwainQuotes, useClass: MockTwainQuotes}], // A (more-async-tests) - provide + use class of the mock
+// });
+// const twainQuotes = TestBed.inject(TwainQuotes) as MockTwainQuotes; // B (more-async-tests) - inject the service as the mock
+//
+// Is how these tests work with the mock then being injected in
+
+describe('AddInventoryComponent#submitForm()', () => {
+  let component: AddInventoryComponent;
+  let fixture: ComponentFixture<AddInventoryComponent>;
+  let inventoryService: InventoryService;
+  let location: Location;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [
+        AddInventoryComponent,
+        MatSnackBarModule
+      ],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        {provide: InventoryService, useClass: MockInventoryService }, // A (more-async-tests) - provide + use class of the mock
+        // provideRouter([
+        //   { path: 'inventory/:id', component: InventoryListComponent }
+        // ])
+      ]
+    }).compileComponents().catch(error => {
+      expect(error).toBeNull();
+    });
+  });
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(AddInventoryComponent);
+    component = fixture.componentInstance;
+    inventoryService = TestBed.inject(InventoryService); // B (more-async-tests) - inject the service as the mock
+    location = TestBed.inject(Location);
+    // We need to inject the router and the HttpTestingController, but
+    // never need to use them. So, we can just inject them into the TestBed
+    // and ignore the returned values.
+    TestBed.inject(Router);
+    TestBed.inject(HttpTestingController);
+    fixture.detectChanges();
+  });
+
+  beforeEach(() => {
+    // Set up the form with valid values.
+    // We don't actually have to do this, but it does mean that when we
+    // check that `submitForm()` is called with the right arguments below,
+    // we have some reason to believe that that wasn't passing "by accident".
+    component.addInventoryForm.controls.guardianName.setValue('Chris Smith');
+    component.addInventoryForm.controls.address.setValue('123 Avenue');
+    component.addInventoryForm.controls.timeSlot.setValue('9:00-10:00');
+    component.addInventoryForm.controls.email.setValue('csmith@email.com');
+    //component.addInventoryForm.controls.student.setValue('admin');
+  });
+
+  // it('should call addInventory() and handle success response', fakeAsync(() => {
+  //   const addInventorySpy = spyOn(inventoryService, 'addInventory').and.returnValue(of('1'));
+  //   component.submitForm();
+  //   expect(addInventorySpy).toHaveBeenCalledWith(component.addInventoryForm.value);
+  //   tick();
+  //   expect(location.path()).toBe('/inventory/1');
+  //   flush();
+  // }));
+
+  // This doesn't need `fakeAsync()`, `tick()`, or `flush() because the
+  // error case doesn't navigate to another page. It just displays an error
+  // message in the snackbar. So, we don't need to worry about the asynchronous
+  // nature of navigation.
+  it('should call addInventory() and handle error response', () => {
+    // Save the original path so we can check that it doesn't change.
+    const path = location.path();
+    // A canned error response to be returned by the spy.
+    const errorResponse = { status: 500, message: 'Server error' };
+    // "Spy" on the `.addInventory()` method in the inventory service. Here we basically
+    // intercept any calls to that method and return the error response
+    // defined above.
+    const addInventorySpy = spyOn(inventoryService, 'addInventory')
+      .and
+      .returnValue(throwError(() => errorResponse));
+    component.submitForm();
+    // Check that `.addInventory()` was called with the form's values which we set
+    // up above.
+    expect(addInventorySpy).toHaveBeenCalledWith(component.addInventoryForm.value);
+    // Confirm that we're still at the same path.
+    expect(location.path()).toBe(path);
+  });
+
+
+  it('should call addInventory() and handle error response for illegal inventory', () => {
+    // Save the original path so we can check that it doesn't change.
+    const path = location.path();
+    // A canned error response to be returned by the spy.
+    const errorResponse = { status: 400, message: 'Illegal inventory error' };
+    // "Spy" on the `.addInventory()` method in the inventory service. Here we basically
+    // intercept any calls to that method and return the error response
+    // defined above.
+    const addInventorySpy = spyOn(inventoryService, 'addInventory')
+      .and
+      .returnValue(throwError(() => errorResponse));
+    component.submitForm();
+    // Check that `.addInventory()` was called with the form's values which we set
+    // up above.
+    expect(addInventorySpy).toHaveBeenCalledWith(component.addInventoryForm.value);
+    // Confirm that we're still at the same path.
+    expect(location.path()).toBe(path);
+  });
+
+  it('should call addInventory() and handle unexpected error response if it arises', () => {
+    // Save the original path so we can check that it doesn't change.
+    const path = location.path();
+    // A canned error response to be returned by the spy.
+    const errorResponse = { status: 404, message: 'Not found' };
+    // "Spy" on the `.addInventory()` method in the inventory service. Here we basically
+    // intercept any calls to that method and return the error response
+    // defined above.
+    const addInventorySpy = spyOn(inventoryService, 'addInventory')
+      .and
+      .returnValue(throwError(() => errorResponse));
+    component.submitForm();
+    // Check that `.addInventory()` was called with the form's values which we set
+    // up above.
+    expect(addInventorySpy).toHaveBeenCalledWith(component.addInventoryForm.value);
+    // Confirm that we're still at the same path.
+    expect(location.path()).toBe(path);
+  });
+
+  it('should transform requestedSupplies string into trimmed array', () => {
+    const studentsArray = component.addInventoryForm.get('students') as FormArray;
+
+    studentsArray.push(new FormGroup({
+      name: new FormControl(''),
+      grade: new FormControl(''),
+      school: new FormControl(''),
+      requestedSupplies: new FormControl('')
+    }));
+
+    component.addInventoryForm.patchValue({
+      students: [{
+        name: 'John',
+        grade: '5',
+        school: 'ABC',
+        requestedSupplies: 'pencil, eraser , notebook '
+      }]
+    });
+    const addInventorySpy = spyOn(inventoryService, 'addInventory')
+      .and.returnValue(of('1'));
+    component.submitForm();
+    expect(addInventorySpy).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        students: [
+          jasmine.objectContaining({
+            requestedSupplies: ['pencil', 'eraser', 'notebook']
+          })
+        ]
+      })
+    );
+  });
+
+  it('should transform requestedSupplies string into trimmed array', () => {
+    const studentsArray = component.addInventoryForm.get('students') as FormArray;
+    studentsArray.push(
+      new FormGroup({
+        name: new FormControl('John'),
+        grade: new FormControl('5'),
+        school: new FormControl('ABC'),
+        requestedSupplies: new FormControl('pencil, eraser , notebook ')
+      })
+    );
+    const addInventorySpy = spyOn(inventoryService, 'addInventory')
+      .and.returnValue(of('1'));
+    component.submitForm();
+    expect(addInventorySpy).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        students: [
+          jasmine.objectContaining({
+            requestedSupplies: ['pencil', 'eraser', 'notebook']
+          })]
+      }));
+  });
+});

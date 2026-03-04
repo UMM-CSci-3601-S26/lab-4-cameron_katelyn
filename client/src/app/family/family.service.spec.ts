@@ -4,7 +4,6 @@ import { TestBed, waitForAsync } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { Family } from './family';
 import { FamilyService } from './family.service';
-//import { School } from '../school-list/school';
 
 describe('FamilyService', () => {
   // A small collection of test families
@@ -76,24 +75,7 @@ describe('FamilyService', () => {
     },
   ];
 
-  // A small collection of families organized by school
-  // const testCompanies: Company[] = [
-  //   {
-  //     _id: 'company1',
-  //     count: 1,
-  //     families: [{_id: 'family1', name: 'Family 1'}]
-  //   },
-  //   {
-  //     _id: 'company2',
-  //     count: 2,
-  //       families: [{_id: 'family2', name: 'Family 2'}, {_id: 'family3', name: 'Family 3'}]
-  //   }
-  // ];
-
   let familyService: FamilyService;
-  // These are used to mock the HTTP requests so that we (a) don't have to
-  // have the server running and (b) we can check exactly which HTTP
-  // requests were made to ensure that we're making the correct requests.
   let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
 
@@ -264,8 +246,6 @@ describe('FamilyService', () => {
       const family_id = 'john_id';
       const expected_http_response = { id: family_id } ;
 
-      // Mock the `httpClient.addFamily()` method, so that instead of making an HTTP request,
-      // it just returns our expected HTTP response.
       const mockedMethod = spyOn(httpClient, 'post')
         .and
         .returnValue(of(expected_http_response));
