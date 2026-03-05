@@ -1,25 +1,55 @@
 @if (dashboardStats(); as stats) {
-    <h1>Dashboard</h1>
 
-    <h2>Total Families: {{ stats.totalFamilies }} </h2>
+<h1 class="dashboard-title">Dashboard</h1>
 
-    <h3>Students Per School: </h3>
-    <ul>
+<div class="dashboard-grid">
+
+  <!-- Total Families Card -->
+  <mat-card class="stat-card">
+    <mat-card-title>Total Families</mat-card-title>
+    <mat-card-content>
+      <div class="stat-number">
+        {{ stats.totalFamilies }}
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Students Per School -->
+  <mat-card class="stat-card">
+    <mat-card-title>Students Per School</mat-card-title>
+    <mat-card-content>
+
+      <div class="stat-list">
         @for (school of stats.studentsPerSchool | keyvalue; track school.key) {
-            <li>
-                <div>{{ school.key }}: {{ school.value }}</div>
-            </li>
+          <div class="stat-row">
+            <span class="stat-label">{{ school.key }}</span>
+            <span class="stat-value">{{ school.value }}</span>
+          </div>
         }
-    </ul>
+      </div>
 
-    <h3>Students Per Grade: </h3>
-    <ul>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Students Per Grade -->
+  <mat-card class="stat-card">
+    <mat-card-title>Students Per Grade</mat-card-title>
+    <mat-card-content>
+
+      <div class="stat-list">
         @for (grade of stats.studentsPerGrade | keyvalue; track grade.key) {
-            <li>
-                <div>{{ grade.key }}: {{ grade.value }}</div>
-            </li>
+          <div class="stat-row">
+            <span class="stat-label">Grade: {{ grade.key }}</span>
+            <span class="stat-value">{{ grade.value }}</span>
+          </div>
         }
-    </ul>
-  } @else {
-    <p>Loading dashboard...</p>
+      </div>
+
+    </mat-card-content>
+  </mat-card>
+
+</div>
+
+} @else {
+  <p class="loading-text">Loading dashboard...</p>
 }
