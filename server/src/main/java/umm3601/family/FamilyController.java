@@ -2,6 +2,7 @@ package umm3601.family;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bson.UuidRepresentation;
@@ -28,6 +29,7 @@ import umm3601.Controller;
 - addNewFamily()
 - deleteFamily() /By ID/
 - getDashboardStats() /Has its own API/
+- exportFamiliesAsCSV()
 */
 
 /* Notes:
@@ -39,6 +41,7 @@ public class FamilyController implements Controller {
   private static final String API_FAMILY = "/api/family";
   private static final String API_DASHBOARD = "/api/dashboard";
   private static final String API_FAMILY_BY_ID = "/api/family/{id}";
+  private static final String API_FAMILY_EXPORT = "/api/family/export";
 
   public static final String EMAIL_REGEX = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
 
@@ -136,12 +139,44 @@ public class FamilyController implements Controller {
     ctx.json(result);
   }
 
+  public void exportFamiliesAsCSV(Context ctx) {
+    List<Family> families = familyCollection.find().into(new ArrayList<>());
+
+    StringBuilder csv = new StringBuilder();
+
+    // Header
+    csv.append("Guardian Name,Email,Address,Time Slot,Number of Students\n");
+
+    for (Family family : families) {
+
+      int studentCount = family.students != null ? family.students.size() : 0;
+
+      csv.append(String.format("\"%s\",\"%s\",\"%s\",\"%s\",%d\n",
+        family.guardianName,
+        family.email,
+        family.address,
+        family.timeSlot,
+        studentCount
+      ));
+    }
+
+    ctx.contentType("text/csv");
+    ctx.header("Content-Disposition", "attachment; filename=families.csv");
+    ctx.status(HttpStatus.OK);
+    ctx.result(csv.toString());
+  }
+
   @Override
   public void addRoutes(Javalin server) {
     server.get(API_FAMILY, this::getFamilies);
     server.post(API_FAMILY, this::addNewFamily);
+
+    // Put specific routes FIRST
+    server.get(API_FAMILY_EXPORT, this::exportFamiliesAsCSV);
+    server.get(API_DASHBOARD, this::getDashboardStats);
+
+    // Put {id} routes LAST
     server.get(API_FAMILY_BY_ID, this::getFamily);
     server.delete(API_FAMILY_BY_ID, this::deleteFamily);
-    server.get(API_DASHBOARD, this::getDashboardStats);
   }
 }

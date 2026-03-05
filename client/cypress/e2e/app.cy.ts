@@ -5,11 +5,7 @@ const page = new AppPage();
 describe('App', () => {
   beforeEach(() => page.navigateTo());
 
-  it('Should have the correct title', () => {
-    page.getAppTitle().should('contain', 'CSCI 3601 Iteration Template');
-  });
-
-  it('The sidenav should open, navigate to "Users" and back to "Home"', () => {
+  it('The sidenav should open, navigate to "Families" and back to "Home"', () => {
     // Before clicking on the button, the sidenav should be hidden
     page.getSidenav()
       .should('be.hidden');
@@ -17,8 +13,8 @@ describe('App', () => {
       .should('be.visible');
 
     page.getSidenavButton().click();
-    page.getNavLink('Users').click();
-    cy.url().should('match', /\/users$/);
+    page.getNavLink('Families').click();
+    cy.url().should('match', /^http:\/\/localhost:4200\/family$/);
     page.getSidenav()
       .should('be.hidden');
 

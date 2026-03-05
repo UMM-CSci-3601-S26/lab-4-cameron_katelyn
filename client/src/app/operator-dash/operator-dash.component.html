@@ -1,0 +1,25 @@
+@if (dashboardStats(); as stats) {
+    <h1>Dashboard</h1>
+
+    <h2>Total Families: {{ stats.totalFamilies }} </h2>
+
+    <h3>Students Per School: </h3>
+    <ul>
+        @for (school of stats.studentsPerSchool | keyvalue; track school.key) {
+            <li>
+                <div>{{ school.key }}: {{ school.value }}</div>
+            </li>
+        }
+    </ul>
+
+    <h3>Students Per Grade: </h3>
+    <ul>
+        @for (grade of stats.studentsPerGrade | keyvalue; track grade.key) {
+            <li>
+                <div>{{ grade.key }}: {{ grade.value }}</div>
+            </li>
+        }
+    </ul>
+  } @else {
+    <p>Loading dashboard...</p>
+}
