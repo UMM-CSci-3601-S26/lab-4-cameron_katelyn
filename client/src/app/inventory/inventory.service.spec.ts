@@ -6,7 +6,7 @@ import { InventoryItem } from './inventory';
 import { InventoryService } from './inventory.service';
 
 describe('InventoryService', () => {
-  // A small collection of test families
+  // A small collection of test inventory
   const testInventory: InventoryItem[] = [
     {
       _id: 'backpack_id',
@@ -57,100 +57,18 @@ describe('InventoryService', () => {
           .toHaveBeenCalledTimes(1);
         expect(mockedMethod)
           .withContext('talks to the correct endpoint')
-          .toHaveBeenCalledWith(inventoryService.inventoryUrl, { params: new HttpParams() });
+          .toHaveBeenCalledWith(inventoryService.inventoryUrl);
       });
     }));
   });
 
-  describe('When getInventory() is called with parameters, it correctly forms the HTTP request (Javalin/Server filtering)', () => {
-    /*
-      * As in the test of `getFamilies()` that takes in no filters in the params,
-      * we really don't care what `getFamilies()` returns in the cases
-      * where the filtering is happening on the server. Since all the
-      * filtering is happening on the server, `getFamilies()` is really
-      * just a "pass through" that returns whatever it receives, without
-      * any "post processing" or manipulation. So the tests in this
-      * `describe` block all confirm that the HTTP request is properly formed
-      * and sent out in the world, but don't _really_ care about
-      * what `getFamilies()` returns as long as it's what the HTTP
-      * request returns.
-      *
-      * So in each of these tests, we'll keep it simple and have
-      * the (mocked) HTTP request return the entire list `testInventory`
-      * even though in "real life" we would expect the server to
-      * return return a filtered subset of the families. Furthermore, we
-      * won't actually check what got returned (there won't be an `expect`
-      * about the returned value).
-      */
-
-    it('correctly calls api/families with no parameters', () => {
-      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
-
-      inventoryService.getFamilies().subscribe(() => {
-        // This test checks that the call to `inventoryService.getFamilies()` does several things:
-        //   * It calls the mocked method (`HttpClient#get()`) exactly once.
-        //   * It calls it with the correct endpoint (`inventoryService.inventoryUrl`).
-        //   * It calls it with the correct parameters:
-        //      * There should be three parameters (this makes sure that there aren't extras).
-        //      * There should be a "role:editor" key-value pair.
-        //      * And a "company:IBM" pair.
-        //      * And a "age:37" pair.
-
-        // This gets the arguments for the first (and in this case only) call to the `mockMethod`.
-        const [url, options] = mockedMethod.calls.argsFor(0);
-        // Gets the `HttpParams` from the options part of the call.
-        // `options.param` can return any of a broad number of types;
-        // it is in fact an instance of `HttpParams`, and I need to use
-        // that fact, so I'm casting it (the `as HttpParams` bit).
-        const calledHttpParams: HttpParams = (options.params) as HttpParams;
-        expect(mockedMethod)
-          .withContext('one call')
-          .toHaveBeenCalledTimes(1);
-        expect(url)
-          .withContext('talks to the correct endpoint')
-          .toEqual(inventoryService.inventoryUrl);
-        expect(calledHttpParams.keys().length)
-          .withContext('should have 0 params')
-          .toEqual(0);
-      });
-    });
-  });
 
   describe('When getInventoryById() is given an ID', () => {
-    /* We really don't care what `getInventoryById()` returns. Since all the
-    * interesting work is happening on the server, `getInventoryById()`
-    * is really just a "pass through" that returns whatever it receives,
-    * without any "post processing" or manipulation. The test in this
-    * `describe` confirms that the HTTP request is properly formed
-    * and sent out in the world, but we don't _really_ care about
-    * what `getInventoryById()` returns as long as it's what the HTTP
-    * request returns.
-    *
-    * So in this test, we'll keep it simple and have
-    * the (mocked) HTTP request return the `targetInventory`
-    * Furthermore, we won't actually check what got returned (there won't be an `expect`
-    * about the returned value). Since we don't use the returned value in this test,
-    * It might also be fine to not bother making the mock return it.
-    */
     it('calls api/families/id with the correct ID', waitForAsync(() => {
-      // We're just picking a Inventory "at random" from our little
-      // set of Families up at the top.
-      const targetInventory: Inventory = testInventory[1];
+      const targetInventory: InventoryItem = testInventory[1];
       const targetId: string = targetInventory._id;
-
-      // Mock the `httpClient.get()` method so that instead of making an HTTP request
-      // it just returns one inventory from our test data
       const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(targetInventory));
-
-      // Call `inventoryService.getInventory()` and confirm that the correct call has
-      // been made with the correct arguments.
-      //
-      // We have to `subscribe()` to the `Observable` returned by `getInventoryById()`.
-      // The `inventory` argument in the function below is the thing of type Inventory returned by
-      // the call to `getInventoryById()`.
       inventoryService.getInventoryById(targetId).subscribe(() => {
-        // The `Inventory` returned by `getInventoryById()` should be targetInventory, but
-        // we don't bother with an `expect` here since we don't care what was returned.
         expect(mockedMethod)
           .withContext('one call')
           .toHaveBeenCalledTimes(1);
@@ -196,40 +114,4 @@ describe('InventoryService', () => {
     }));
   });
 
-  describe('When getDashboardStats() is called with parameters, it correctly forms the HTTP request (Javalin/Server filtering)', () => {
-    it('correctly calls api/dashboard with no parameters', () => {
-      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
-
-      inventoryService.getDashboardStats().subscribe(() => {
-
-        const [url, options] = mockedMethod.calls.argsFor(0);
-        const calledHttpParams: HttpParams = (options.params) as HttpParams;
-        expect(mockedMethod)
-          .withContext('one call')
-          .toHaveBeenCalledTimes(1);
-        expect(url)
-          .withContext('talks to the correct endpoint')
-          .toEqual(inventoryService.dashboardUrl);
-        expect(calledHttpParams.keys().length)
-          .withContext('should have 0 params')
-          .toEqual(0);
-      });
-    });
-  });
-
-  it('should call GET /export and return Csv text', () => {
-    const mockCsv = `Guardian Name,Email,Address,Time Slot,Number of Students
-                     John Johnson,jjohnson@email.com,713 Broadway,8:00-9:00,1`;
-
-    inventoryService.exportFamilies().subscribe(response => {
-      expect(response).toBe(mockCsv);
-    });
-
-    const req = httpTestingController.expectOne(`${inventoryService['inventoryUrl']}/export`)
-
-    expect(req.request.method).toBe('GET');
-    expect(req.request.responseType).toBe('text');
-
-    req.flush(mockCsv);
-  })
 });

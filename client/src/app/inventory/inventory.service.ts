@@ -10,28 +10,28 @@ import { InventoryItem } from './inventory';
 })
 
 export class InventoryService {
-  private http = inject(HttpClient);
-  private inventoryUrl = `${environment.apiUrl}inventory`;
+  private httpClient = inject(HttpClient);
+  readonly inventoryUrl = `${environment.apiUrl}inventory`;
 
   getInventory(): Observable<InventoryItem[]> {
-    return this.http.get<InventoryItem[]>(this.inventoryUrl);
+    return this.httpClient.get<InventoryItem[]>(this.inventoryUrl);
   }
 
   getInventoryById(id: string): Observable<InventoryItem> {
-    return this.http.get<InventoryItem>(`${this.inventoryUrl}/${id}`);
+    return this.httpClient.get<InventoryItem>(`${this.inventoryUrl}/${id}`);
   }
 
   addInventory(item: Partial<InventoryItem>): Observable<string> {
-    return this.http
+    return this.httpClient
       .post<{ id: string }>(this.inventoryUrl, item)
       .pipe(map(res => res.id));
   }
 
   updateQuantity(id: string, quantity: number): Observable<void> {
-    return this.http.put<void>(`${this.inventoryUrl}/${id}`, { quantityAvailable: quantity });
+    return this.httpClient.put<void>(`${this.inventoryUrl}/${id}`, { quantityAvailable: quantity });
   }
 
-  deleteInventory(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.inventoryUrl}/${id}`);
+  deleteInventory(id: string): Observable<unknown> {
+    return this.httpClient.delete<void>(`${this.inventoryUrl}/${id}`);
   }
 }
