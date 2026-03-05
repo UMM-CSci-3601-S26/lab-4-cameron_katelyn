@@ -24,7 +24,9 @@ describe('Inventory list', () => {
 
   it('Should increase quantity when + is clicked', () => {
     page.getQuantityValueOfFirstRow().then(initial => {
+      cy.intercept('/api/inventory/**').as('updateInventory');
       page.clickPlusOnFirstRow();
+      cy.wait('@updateInventory');
       page.getQuantityValueOfFirstRow()
         .should('equal', initial + 1)
     });
@@ -32,7 +34,9 @@ describe('Inventory list', () => {
 
   it('Should decrease quantity when - is clicked', () => {
     page.getQuantityValueOfFirstRow().then(initial => {
+      cy.intercept('/api/inventory/**').as('updateInventory');
       page.clickMinusOnFirstRow();
+      cy.wait('@updateInventory');
       page.getQuantityValueOfFirstRow()
         .should('equal', initial - 1)
     });
@@ -40,8 +44,9 @@ describe('Inventory list', () => {
 
   it('Should delete an inventory item', () => {
     page.getRowCount().then(initialCount => {
-      page.clickDeleteOnFirstRow();
-      page.getRows().should('have.length', initialCount - 1);
+      return page.clickDeleteOnFirstRow().then(() => {
+        page.getRows().should('have.length', initialCount - 1);
+      });
     });
   });
 
