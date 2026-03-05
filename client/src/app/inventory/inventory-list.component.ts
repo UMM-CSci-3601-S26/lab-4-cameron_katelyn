@@ -11,6 +11,7 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-inventory',
   templateUrl: './inventory-list.component.html',
+  styleUrls: ['./inventory-list.component.scss'],
   imports: [MatCardHeader, MatCard, MatCardTitle, MatCardContent, MatIcon, MatError, RouterLink],
 })
 
