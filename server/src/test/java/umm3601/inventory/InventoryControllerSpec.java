@@ -4,7 +4,9 @@ package umm3601.inventory;
 // Static Imports
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static com.mongodb.client.model.Filters.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,6 +46,9 @@ import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
+import io.javalin.json.JavalinJackson;
+import io.javalin.validation.BodyValidator;
+import io.javalin.validation.ValidationException;
 
 
 // InventoryControllerSpec Class
@@ -51,10 +56,12 @@ import io.javalin.http.NotFoundResponse;
 public class InventoryControllerSpec {
 
   private InventoryController inventoryController;
-  private ObjectId samsId;
+  private ObjectId inventoryId;
 
   private static MongoClient mongoClient;
   private static MongoDatabase db;
+
+  private static JavalinJackson javalinJackson = new JavalinJackson();
 
   @Mock
   private Context ctx;
@@ -130,9 +137,9 @@ public class InventoryControllerSpec {
             .append("type", "spiral")
             .append("material", "paper"));
 
-    samsId = new ObjectId();
+    inventoryId = new ObjectId();
     Document sam = new Document()
-        .append("_id", samsId)
+        .append("_id", inventoryId)
         .append("item", "Backpack")
         .append("brand", "JanSport")
         .append("color", "black")
@@ -166,7 +173,7 @@ public class InventoryControllerSpec {
 
     @Test
   void getInventoryWithExistentId() throws IOException {
-    String id = samsId.toHexString();
+    String id = inventoryId.toHexString();
     when(ctx.pathParam("id")).thenReturn(id);
 
     inventoryController.getInventory(ctx);
@@ -174,7 +181,7 @@ public class InventoryControllerSpec {
     verify(ctx).json(inventoryCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
     assertEquals("Backpack", inventoryCaptor.getValue().item);
-    assertEquals(samsId.toHexString(), inventoryCaptor.getValue()._id);
+    assertEquals(inventoryId.toHexString(), inventoryCaptor.getValue()._id);
   }
 
   @Test
@@ -338,5 +345,152 @@ public class InventoryControllerSpec {
     inventoryController.addRoutes(mockServer);
     verify(mockServer, Mockito.atLeast(1)).get(any(), any());
   }
-}
 
+@Test
+  void deleteFoundInventory() throws IOException {
+    String testID = inventoryId.toString();
+    when(ctx.pathParam("id")).thenReturn(testID);
+
+    assertEquals(1, db.getCollection("inventory").countDocuments(eq("_id", new ObjectId(testID))));
+
+    inventoryController.deleteInventory(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+
+    assertEquals(0, db.getCollection("inventory").countDocuments(eq("_id", new ObjectId(testID))));
+  }
+
+  @Test
+  void tryToDeleteNotFoundInventory() throws IOException {
+    String testID = inventoryId.toString();
+    when(ctx.pathParam("id")).thenReturn(testID);
+
+    inventoryController.deleteInventory(ctx);
+    assertEquals(0, db.getCollection("inventory").countDocuments(eq("_id", new ObjectId(testID))));
+
+    assertThrows(NotFoundResponse.class, () -> {
+      inventoryController.deleteInventory(ctx);
+    });
+
+    verify(ctx).status(HttpStatus.NOT_FOUND);
+    assertEquals(0, db.getCollection("inventory").countDocuments(eq("_id", new ObjectId(testID))));
+  }
+
+  @Test
+  void deleteInventoryWithBadId() {
+    when(ctx.pathParam("id")).thenReturn("bad");
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      inventoryController.deleteInventory(ctx);
+    });
+  }
+
+  @Test
+  void canAddInventory() throws IOException {
+    String newInventoryJson = """
+        {
+          "item": "Crayons",
+          "brand": "Crayola",
+          "color": "multicolor",
+          "count": 1,
+          "size": "N/A",
+          "description": "A box of crayons",
+          "quantity": 2,
+          "notes": "N/A",
+          "type": "wax",
+          "material": "wax"
+        }
+        """;
+    when(ctx.body()).thenReturn(newInventoryJson);
+    when(ctx.bodyValidator(Inventory.class))
+      .thenReturn(new BodyValidator<Inventory>(newInventoryJson, Inventory.class,
+                    () -> javalinJackson.fromJsonString(newInventoryJson, Inventory.class)));
+
+    inventoryController.addInventory(ctx);
+    verify(ctx).json(mapCaptor.capture());
+
+    verify(ctx).status(HttpStatus.CREATED);
+
+    assertEquals("Crayons", inventoryCaptor.getValue().item);
+    assertEquals("Crayola", inventoryCaptor.getValue().brand);
+    assertEquals("multicolor", inventoryCaptor.getValue().color);
+    assertEquals(1, inventoryCaptor.getValue().count);
+    assertEquals("N/A", inventoryCaptor.getValue().size);
+    assertEquals("A box of crayons", inventoryCaptor.getValue().description);
+    assertEquals(2, inventoryCaptor.getValue().quantity);
+    assertEquals("N/A", inventoryCaptor.getValue().notes);
+    assertEquals("wax", inventoryCaptor.getValue().type);
+    assertEquals("wax", inventoryCaptor.getValue().material);
+
+  }
+
+  @Test
+  void addInventoryWithMissingField() throws IOException {
+    when(ctx.body()).thenReturn("""
+        {
+          "item": "Crayons",
+          "brand": "Crayola",
+          "color": "multicolor",
+          "count": 1,
+          "size": "N/A",
+          "description": "A box of crayons",
+          "quantity": 2,
+          "notes": "N/A",
+          "type": "wax"
+          "material": "wax"
+        """);
+
+    assertThrows(BadRequestResponse.class, () -> {
+      inventoryController.addInventory(ctx);
+    });
+  }
+
+  @Test
+  void addInventoryWithInvalidCount() throws IOException {
+    when(ctx.body()).thenReturn("""
+        {
+          "item": "Crayons",
+          "brand": "Crayola",
+          "color": "multicolor",
+          "count": "notAnInt",
+          "size": "N/A",
+          "description": "A box of crayons",
+          "quantity": 2,
+          "notes": "N/A",
+          "type": "wax",
+          "material": "wax"
+        }
+        """);
+
+    ValidationException ex =
+      assertThrows(ValidationException.class, () -> {
+        inventoryController.addInventory(ctx);
+      });
+
+    String exceptionMessage = ex.getErrors().get("REQUEST_BODY").get(0).toString();
+
+    assertTrue(exceptionMessage.contains("Quantity must be 1 or more"));
+  }
+
+  @Test
+  void addInventoryWithInvalidQuantity() throws IOException {
+    when(ctx.body()).thenReturn("""
+        {
+          "item": "Crayons",
+          "brand": "Crayola",
+          "color": "multicolor",
+          "count": 1,
+          "size": "N/A",
+          "description": "A box of crayons",
+          "quantity": "notAnInt",
+          "notes": "N/A",
+          "type": "wax",
+          "material": "wax"
+        }
+        """);
+
+    assertThrows(BadRequestResponse.class, () -> {
+      inventoryController.addInventory(ctx);
+    });
+  }
+}
