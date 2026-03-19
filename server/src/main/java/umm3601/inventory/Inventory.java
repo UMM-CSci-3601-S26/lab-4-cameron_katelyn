@@ -5,6 +5,8 @@ package umm3601.inventory;
 import org.mongojack.Id;
 import org.mongojack.ObjectId;
 
+import umm3601.inventory.Inventory;
+
 // Inventory Class
 @SuppressWarnings({"VisibilityModifier"})
 public class Inventory {

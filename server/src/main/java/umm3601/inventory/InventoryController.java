@@ -32,6 +32,7 @@ import io.javalin.http.NotFoundResponse;
 
 // Misc Imports
 import umm3601.Controller;
+import umm3601.inventory.Inventory;
 
 // Controller
 public class InventoryController implements Controller {
