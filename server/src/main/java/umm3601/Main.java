@@ -3,9 +3,9 @@ package umm3601;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
-import umm3601.inventory.InventoryController;
 import umm3601.supply.SupplyController;
 import umm3601.family.FamilyController;
+import umm3601.inventory.InventoryController;
 
 public class Main {
 

@@ -1,44 +1,76 @@
+// Packages
 package umm3601.inventory;
 
+// Static Imports
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// Org Imports
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+// InventorySpec Class
 public class InventorySpec {
   private static final String FAKE_ID_STRING_1 = "fakeIdOne";
   private static final String FAKE_ID_STRING_2 = "fakeIdTwo";
 
-  private Inventory inventory1;
-  private Inventory inventory2;
+  private Inventory inv1;
+  private Inventory inv2;
 
   @BeforeEach
   void setupEach() {
-    inventory1 = new Inventory();
-    inventory2 = new Inventory();
+    inv1 = new Inventory();
+    inv2 = new Inventory();
+
+    inv1.item = "Pencil";
+    inv1.brand = "Ticonderoga";
+    inv1.description = "Ticonderoga Pencil";
   }
 
   @Test
-  void suppliesWithEqualIdAreEqual() {
-    inventory1._id = FAKE_ID_STRING_1;
-    inventory2._id = FAKE_ID_STRING_1;
+  void inventoriesWithEqualIdAreEqual() {
+    inv1._id = FAKE_ID_STRING_1;
+    inv2._id = FAKE_ID_STRING_1;
 
-    assertEquals(inventory1._id, inventory2._id); //This line changed from UserSpec due to error
+    assertTrue(inv1.equals(inv2));
   }
 
   @Test
-  void suppliesWithDifferentIdAreNotEqual() {
-    inventory1._id = FAKE_ID_STRING_1;
-    inventory2._id = FAKE_ID_STRING_2;
+  void inventoriesWithDifferentIdAreNotEqual() {
+    inv1._id = FAKE_ID_STRING_1;
+    inv2._id = FAKE_ID_STRING_2;
 
-    assertFalse(inventory1.equals(inventory2));
+    assertFalse(inv1.equals(inv2));
+  }
+
+  @Test
+  void hashCodesAreBasedOnId() {
+    inv1._id = FAKE_ID_STRING_1;
+    inv2._id = FAKE_ID_STRING_1;
+
+    assertTrue(inv1.hashCode() == inv2.hashCode());
   }
 
   @SuppressWarnings("unlikely-arg-type")
   @Test
-  void suppliesAreNotEqualToOtherKindsOfThings() {
-    inventory1._id = FAKE_ID_STRING_1;
-    assertFalse(inventory1.equals(FAKE_ID_STRING_1));
+  void inventoriesAreNotEqualToOtherKindsOfThings() {
+    inv1._id = FAKE_ID_STRING_1;
+    // an Inventory is not equal to its id even though id is used for checking equality
+    assertFalse(inv1.equals(FAKE_ID_STRING_1));
+  }
+
+  @Test
+  void nullId() {
+    inv1._id = null;
+    inv2._id = FAKE_ID_STRING_2;
+
+    assertEquals(inv1.hashCode(), 0);
+    assertFalse(inv1.equals(inv2));
+  }
+
+  @Test
+  void inventoryToString() {
+    assertEquals(inv1.toString(), "Pencil Ticonderoga Ticonderoga Pencil");
   }
 }

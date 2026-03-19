@@ -1,43 +1,45 @@
+// Packages
 package umm3601.inventory;
 
+// Org Imports
 import org.mongojack.Id;
 import org.mongojack.ObjectId;
 
-/**
- * The Inventory model represents the *physical stock* available for each supply item.
- *
- * Iteration 1 intentionally keeps this model extremely simple:
- *  - Only one stable identifier (itemKey)
- *  - A human-readable name (itemName)
- *  - A single mutable field (quantityAvailable)
- *
- * This minimal structure makes Inventory easy to evolve in future iterations.
- * Later teams may add:
- *  - location-based stock (like the bin base system)
- *  - item categories (Brand, count, color, etc)
- *
- * Currently, Inventory exists as a lightweight placeholder for future expansion.
- */
+// Inventory Class
 @SuppressWarnings({"VisibilityModifier"})
 public class Inventory {
 
   @ObjectId @Id
   @SuppressWarnings({"MemberName"})
-  public String _id; // MongoDB ObjectId stored as a string
+  public String _id;
 
-  /**
-   * itemKey is the stable identifier shared across:
-   *  - Supply (requirements)
-   *  - Family requests
-   *  - Inventory (stock)
-   *
-   * Using itemKey instead of _id allows the same supply item
-   * to appear in multiple school/grade lists.
-   */
-  public String itemKey;
+  public String item;
+  public String brand;
+  public int count;
+  public String size;
+  public String color;
+  public String type;
+  public String material;
+  public String description;
+  public int quantity;
+  public String notes;
 
-  // Human-readable name for display purposes.
-  public String itemName;
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Inventory)) {
+      return false;
+    }
+    Inventory other = (Inventory) obj;
+    return _id != null && _id.equals(other._id);
+  }
 
-  public int quantityAvailable;
+  @Override
+  public int hashCode() {
+    return _id == null ? 0 : _id.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return item + " " + brand + " " + description;
+  }
 }
