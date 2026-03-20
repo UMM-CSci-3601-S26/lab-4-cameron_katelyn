@@ -401,7 +401,7 @@ public class InventoryControllerSpec {
           "material": "wax"
         }
         """;
-    when(ctx.body()).thenReturn(newInventoryJson);
+
     when(ctx.bodyValidator(Inventory.class))
       .thenReturn(new BodyValidator<Inventory>(newInventoryJson, Inventory.class,
                     () -> javalinJackson.fromJsonString(newInventoryJson, Inventory.class)));
@@ -411,48 +411,28 @@ public class InventoryControllerSpec {
 
     verify(ctx).status(HttpStatus.CREATED);
 
-    assertEquals("Crayons", inventoryCaptor.getValue().item);
-    assertEquals("Crayola", inventoryCaptor.getValue().brand);
-    assertEquals("multicolor", inventoryCaptor.getValue().color);
-    assertEquals(1, inventoryCaptor.getValue().count);
-    assertEquals("N/A", inventoryCaptor.getValue().size);
-    assertEquals("A box of crayons", inventoryCaptor.getValue().description);
-    assertEquals(2, inventoryCaptor.getValue().quantity);
-    assertEquals("N/A", inventoryCaptor.getValue().notes);
-    assertEquals("wax", inventoryCaptor.getValue().type);
-    assertEquals("wax", inventoryCaptor.getValue().material);
+    Document addedInventory = db.getCollection("inventory")
+        .find(eq("_id", new ObjectId(mapCaptor.getValue().get("id")))).first();
 
-  }
-
-  @Test
-  void addInventoryWithMissingField() throws IOException {
-    when(ctx.body()).thenReturn("""
-        {
-          "item": "Crayons",
-          "brand": "Crayola",
-          "color": "multicolor",
-          "count": 1,
-          "size": "N/A",
-          "description": "A box of crayons",
-          "quantity": 2,
-          "notes": "N/A",
-          "type": "wax"
-          "material": "wax"
-        """);
-
-    assertThrows(BadRequestResponse.class, () -> {
-      inventoryController.addInventory(ctx);
-    });
+    assertEquals("Crayons", addedInventory.get("item"));
+    assertEquals("Crayola", addedInventory.get("brand"));
+    assertEquals("multicolor", addedInventory.get("color"));
+    assertEquals(1, addedInventory.get("count"));
+    assertEquals("N/A", addedInventory.get("size"));
+    assertEquals("A box of crayons", addedInventory.get("description"));
+    assertEquals(2, addedInventory.get("quantity"));
+    assertEquals("N/A", addedInventory.get("notes"));
+    assertEquals("wax", addedInventory.get("type"));
   }
 
   @Test
   void addInventoryWithInvalidCount() throws IOException {
-    when(ctx.body()).thenReturn("""
+    String newInventoryJson = """
         {
           "item": "Crayons",
           "brand": "Crayola",
           "color": "multicolor",
-          "count": "notAnInt",
+          "count": "0",
           "size": "N/A",
           "description": "A box of crayons",
           "quantity": 2,
@@ -460,37 +440,81 @@ public class InventoryControllerSpec {
           "type": "wax",
           "material": "wax"
         }
-        """);
+        """;
 
-    ValidationException ex =
-      assertThrows(ValidationException.class, () -> {
-        inventoryController.addInventory(ctx);
-      });
+    when(ctx.body()).thenReturn(newInventoryJson);
+    when(ctx.bodyValidator(Inventory.class))
+      .thenReturn(new BodyValidator<Inventory>(newInventoryJson, Inventory.class,
+                    () -> javalinJackson.fromJsonString(newInventoryJson, Inventory.class)));
 
-    String exceptionMessage = ex.getErrors().get("REQUEST_BODY").get(0).toString();
+    ValidationException exception = assertThrows(ValidationException.class, () -> {
+      inventoryController.addInventory(ctx);
+    });
+
+    String exceptionMessage = exception.getErrors().get("REQUEST_BODY").get(0).toString();
 
     assertTrue(exceptionMessage.contains("Quantity must be 1 or more"));
   }
 
   @Test
   void addInventoryWithInvalidQuantity() throws IOException {
-    when(ctx.body()).thenReturn("""
+    String newInventoryJson = """
         {
           "item": "Crayons",
           "brand": "Crayola",
           "color": "multicolor",
-          "count": 1,
+          "count": "1",
           "size": "N/A",
           "description": "A box of crayons",
-          "quantity": "notAnInt",
+          "quantity": -1,
           "notes": "N/A",
           "type": "wax",
           "material": "wax"
         }
-        """);
+        """;
 
-    assertThrows(BadRequestResponse.class, () -> {
+    when(ctx.body()).thenReturn(newInventoryJson);
+    when(ctx.bodyValidator(Inventory.class))
+      .thenReturn(new BodyValidator<Inventory>(newInventoryJson, Inventory.class,
+                    () -> javalinJackson.fromJsonString(newInventoryJson, Inventory.class)));
+
+    ValidationException exception = assertThrows(ValidationException.class, () -> {
       inventoryController.addInventory(ctx);
     });
+
+    String exceptionMessage = exception.getErrors().get("REQUEST_BODY").get(0).toString();
+
+    assertTrue(exceptionMessage.contains("Quantity must be >= 0"));
+  }
+
+  @Test
+  void addInventoryWithInvalidItem() throws IOException {
+    String newInventoryJson = """
+        {
+          "item": "",
+          "brand": "Crayola",
+          "color": "multicolor",
+          "count": "10",
+          "size": "N/A",
+          "description": "A box of crayons",
+          "quantity": 2,
+          "notes": "N/A",
+          "type": "wax",
+          "material": "wax"
+        }
+        """;
+
+    when(ctx.body()).thenReturn(newInventoryJson);
+    when(ctx.bodyValidator(Inventory.class))
+      .thenReturn(new BodyValidator<Inventory>(newInventoryJson, Inventory.class,
+                    () -> javalinJackson.fromJsonString(newInventoryJson, Inventory.class)));
+
+    ValidationException exception = assertThrows(ValidationException.class, () -> {
+      inventoryController.addInventory(ctx);
+    });
+
+    String exceptionMessage = exception.getErrors().get("REQUEST_BODY").get(0).toString();
+
+    assertTrue(exceptionMessage.contains("Inventory must have a non-empty item key"));
   }
 }
