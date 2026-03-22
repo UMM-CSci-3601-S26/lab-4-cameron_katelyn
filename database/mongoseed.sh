@@ -1,3 +1,4 @@
+export OPENSSL_CONF=/tmp/openssl.cnf
 #!/usr/bin/env bash
 
 seed_db="${MONGO_DB:-dev}"

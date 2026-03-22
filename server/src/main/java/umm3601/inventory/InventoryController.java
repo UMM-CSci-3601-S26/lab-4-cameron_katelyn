@@ -9,6 +9,7 @@ import static com.mongodb.client.model.Filters.regex;
 // Java Imports
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 // Org Imports
@@ -22,6 +23,7 @@ import org.mongojack.JacksonMongoCollection;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
 
 // IO Imports
 import io.javalin.Javalin;
@@ -144,9 +146,52 @@ public class InventoryController implements Controller {
     return filters.isEmpty() ? new Document() : and(filters);
   }
 
+  /**
+   * POST /api/inventory
+   * Adds a new inventory item.
+   *
+   * Validation ensures:
+   *  - quantity is non-negative
+   *  - count is at least 1
+   *  - item name is present
+   */
+  public void addInventory(Context ctx) {
+    //String body = ctx.body();
+    Inventory newItem = ctx.bodyValidator(Inventory.class)
+      .check(inventory -> inventory.quantity >= 0,
+        "Quantity must be >= 0")
+      .check(inventory -> inventory.count >= 1,
+        "Quantity must be 1 or more")
+      .check(inventory -> inventory.item != null && inventory.item.length() > 0,
+        "Inventory must have a non-empty item key")
+      .get();
+
+    inventoryCollection.insertOne(newItem);
+
+    ctx.json(Map.of("id", newItem._id));
+    ctx.status(HttpStatus.CREATED);
+  }
+
+
+  // DELETE inventory item
+  public void deleteInventory(Context ctx) {
+    String id = ctx.pathParam("id");
+    DeleteResult deleteResult = inventoryCollection.deleteOne(eq("_id", new ObjectId(id)));
+
+    if (deleteResult.getDeletedCount() != 1) {
+      ctx.status(HttpStatus.NOT_FOUND);
+      throw new NotFoundResponse(
+        "Was unable to delete ID "
+          + id
+          + "; perhaps illegal ID or an ID for an item not in the system?");
+    }
+    ctx.status(HttpStatus.OK);
+  }
+
   @Override
   public void addRoutes(Javalin server) {
     server.get(API_INVENTORY, this::getInventories);
     server.get(API_INVENTORY_BY_ID, this::getInventory);
+    server.delete(API_INVENTORY_BY_ID, this::deleteInventory);
   }
 }
