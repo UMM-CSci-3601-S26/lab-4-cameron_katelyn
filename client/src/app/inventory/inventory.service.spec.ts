@@ -195,6 +195,43 @@ describe('InventoryService', () => {
       });
     });
 
+    describe('When deleteInventory() is called', () => {
+      // Basic Behavior
+      // Service should call DELETE on the right URL, and this request is invoked exactly once.
+      it('correctly deletes an inventory item by ID', () => {
+        const mockedMethod = spyOn(httpClient, 'delete').and.returnValue(of({}));
+        const idToDelete = '12345';
+
+        inventoryService.deleteInventory(idToDelete).subscribe(() => {
+          const [url] = mockedMethod.calls.argsFor(0);
+          expect(mockedMethod)
+            .withContext('one call')
+            .toHaveBeenCalledTimes(1);
+          expect(url)
+            .withContext('talks to the correct endpoint with ID')
+            .toEqual(`${inventoryService.inventoryUrl}/${idToDelete}`);
+        });
+      });
+
+      // Guard for response semantics
+      // endpoint returns nothing (undefined / void), and we still confirm the URL shape is exactly the inventory endpoint + ID.
+      it('calls delete with the right URL and no body', () => {
+        const idToDelete = 'abc-987';
+        const mockedMethod = spyOn(httpClient, 'delete').and.returnValue(of(undefined));
+
+        inventoryService.deleteInventory(idToDelete).subscribe((body) => {
+          expect(body).toBeUndefined();
+          expect(mockedMethod)
+            .withContext('delete should be called once')
+            .toHaveBeenCalledTimes(1);
+
+          expect(mockedMethod)
+            .withContext('delete path must include ID')
+            .toHaveBeenCalledWith(`${inventoryService.inventoryUrl}/${idToDelete}`);
+        });
+      });
+    });
+
     it('correctly calls api/inventory with multiple filter parameters', () => {
       const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
 

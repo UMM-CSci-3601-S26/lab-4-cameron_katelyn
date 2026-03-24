@@ -55,4 +55,9 @@ export class InventoryService {
     }
     return this.httpClient.get<Inventory[]>(this.inventoryUrl, { params: httpParams });
   }
+
+  // Delete inventory item by ID
+  deleteInventory(id: string): Observable<unknown> {
+    return this.httpClient.delete<void>(`${this.inventoryUrl}/${id}`);
+  }
 }

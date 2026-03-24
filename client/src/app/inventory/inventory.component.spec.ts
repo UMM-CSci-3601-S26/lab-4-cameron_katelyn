@@ -10,7 +10,7 @@ import { MatTableHarness } from '@angular/material/table/testing';
 import { HarnessLoader } from '@angular/cdk/testing';
 
 // RxJS Imports
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 // Inventory Imports
 import { MockInventoryService } from 'src/testing/inventory.service.mock';
@@ -137,6 +137,35 @@ describe('Inventory Table', () => {
   it('should not show error message on successful load', () => {
     expect(inventoryTable.errMsg()).toBeUndefined();
   });
+
+  // Nothing to delete: should report a user-facing error and not call backend.
+  it('should set errMsg when delete is called with undefined id', () => {
+    const deleteSpy = spyOn(inventoryService, 'deleteInventory').and.returnValue(of(undefined));
+    inventoryTable.confirmDelete(undefined);
+
+    expect(inventoryTable.errMsg()).toEqual('Cannot delete: missing item ID');
+    expect(deleteSpy).not.toHaveBeenCalled();
+  });
+
+  // Confirmed delete flow: user confirmation -> service.deleteInventory() -> row removed.
+  it('should call deleteInventory and remove row when confirmed', fakeAsync(() => {
+    const idToDelete = 'item-123';
+    const deleteSpy = spyOn(inventoryService, 'deleteInventory').and.returnValue(of(undefined));
+
+    //avoid browser confirm dialog side effect and simulate user clicking "OK"
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    // Matrix row pre-seeding to ensure the item to delete is present in the table's data source before deletion.
+    inventoryTable.dataSource.data = [
+      { _id: idToDelete, item: 'Markers', description: 'test', brand: 'Crayola', color: 'Black', count: 1, size: 'Wide', type: 'Washable', material: 'Plastic', quantity: 0, notes: 'n/a' } as unknown as Inventory,
+    ];
+
+    inventoryTable.confirmDelete(idToDelete);
+    tick();
+
+    expect(deleteSpy).toHaveBeenCalledWith(idToDelete);
+    expect(inventoryTable.dataSource.data.length).toBe(0);
+  }));
 });
 
 describe('Misbehaving Inventory Table', () => {

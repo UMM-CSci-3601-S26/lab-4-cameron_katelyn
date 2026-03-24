@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatMenuModule } from '@angular/material/menu';
 
 // RxJS Imports
 import { catchError, combineLatest, debounceTime, of, switchMap } from 'rxjs';
@@ -23,6 +24,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 // Inventory Imports
 import { Inventory } from './inventory';
 import { InventoryService } from './inventory.service';
+import { MatMenu } from "@angular/material/menu";
 
 
 @Component({
@@ -44,11 +46,27 @@ import { InventoryService } from './inventory.service';
     MatButtonModule,
     MatTooltipModule,
     MatIconModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatMenu,
+    MatMenuModule
   ],
 })
 export class InventoryComponent {
-  displayedColumns: string[] = ['item', 'description', 'brand', 'color', 'size', 'type', 'material', 'count', 'quantity', 'notes'];
+  displayedColumns: string[] = [
+    'item',
+    'description',
+    'brand',
+    'color',
+    'size',
+    'type',
+    'material',
+    'count',
+    'quantity',
+    'notes',
+    'actions' // Added 'actions' column for the menu
+  ];
+  currentRow: Inventory | null = null; // Track the currently selected row for actions
+
   dataSource = new MatTableDataSource<Inventory>([]);
   readonly page = viewChild<MatPaginator>(MatPaginator)
   readonly sort = viewChild<MatSort>(MatSort);
@@ -103,4 +121,23 @@ export class InventoryComponent {
     ),
     { initialValue: [] }
   );
+
+  /**
+   * Delete a row with confirmation.
+   * - if id missing -> set user error
+   * - if confirmed -> call service and remove from local table data
+   */
+  confirmDelete(id: string | undefined) {
+    if (!id) {
+      this.errMsg.set('Cannot delete: missing item ID');
+      return;
+    }
+    // Note: Try to show what is being deleted in the confirmation dialog - ${this.item()} ??
+    const confirmed = confirm(`Are you sure you want to delete this item?`);
+    if (confirmed) {
+      this.inventoryService.deleteInventory(id).subscribe(() => {
+        this.dataSource.data = this.dataSource.data.filter(item => item._id !== id);
+      });
+    }
+  }
 }

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { AppComponent } from 'src/app/app.component';
-import { Inventory } from 'src/inventory/inventory';
-import { InventoryService } from 'src/inventory/inventory.service';
+import { Inventory } from 'src/app/inventory/inventory';
+import { InventoryService } from 'src/app/inventory/inventory.service';
 
 @Injectable({
   providedIn: AppComponent
@@ -51,5 +51,9 @@ export class MockInventoryService implements Pick<InventoryService, 'getInventor
   /* eslint-disable @typescript-eslint/no-unused-vars */
   getInventory(_filters: { item?: string, brand?: string, color?: string, size?: string, type?: string, material?: string }): Observable<Inventory[]> {
     return of(MockInventoryService.testInventory);
+  }
+
+  deleteInventory(_id: string): Observable<void> {
+    return of(void 0);
   }
 }

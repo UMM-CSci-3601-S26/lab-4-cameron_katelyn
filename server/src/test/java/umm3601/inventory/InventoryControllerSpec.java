@@ -151,6 +151,8 @@ public class InventoryControllerSpec {
         .append("type", "shoulder bag")
         .append("material", "fabric");
 
+    // Seed the test inventory docs; include one record with known id as delete target
+    // InventoryController created with real test DB instance (not mocked) to exercise flow
     inventoryDocuments.insertMany(testInventory);
     inventoryDocuments.insertOne(sam);
 
@@ -348,20 +350,21 @@ public class InventoryControllerSpec {
 
 @Test
   void deleteFoundInventory() throws IOException {
+    // Verify existing document is present, then delete by id and confirm it no longer exists.
+    // Also assert the controller sets 200 OK on successful delete.
     String testID = inventoryId.toString();
     when(ctx.pathParam("id")).thenReturn(testID);
-
     assertEquals(1, db.getCollection("inventory").countDocuments(eq("_id", new ObjectId(testID))));
 
     inventoryController.deleteInventory(ctx);
-
     verify(ctx).status(HttpStatus.OK);
-
     assertEquals(0, db.getCollection("inventory").countDocuments(eq("_id", new ObjectId(testID))));
   }
 
   @Test
   void tryToDeleteNotFoundInventory() throws IOException {
+    // Ensure an already-deleted id returns 404 Not Found and no document exists.
+    // First call clears the item, second call should throw NotFoundResponse.
     String testID = inventoryId.toString();
     when(ctx.pathParam("id")).thenReturn(testID);
 
@@ -378,6 +381,7 @@ public class InventoryControllerSpec {
 
   @Test
   void deleteInventoryWithBadId() {
+    // Invalid ObjectId bypass: controller should throw IllegalArgumentException when id is malformed.
     when(ctx.pathParam("id")).thenReturn("bad");
 
     assertThrows(IllegalArgumentException.class, () -> {

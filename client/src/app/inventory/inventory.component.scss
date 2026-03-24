@@ -71,3 +71,36 @@ th.mat-sort-header-sorted {
   font-size: 1.5rem;
   font-weight: bold;
 }
+
+/* Action column features */
+.inventory-action {
+  min-height: 42px;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.2;
+  color: #212121;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.inventory-action mat-icon {
+  margin-right: 10px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: inherit;
+}
+
+.inventory-action:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.delete-action {
+  color: #e53e3e;
+}
+
+.delete-action:hover {
+  background-color: rgba(198, 40, 40, 0.12);
+}
+

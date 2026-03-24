@@ -4,7 +4,7 @@ import { HomeComponent } from './home/home.component';
 import { OperatorDashComponent } from './operator-dash/operator-dash.component';
 import { FamilyListComponent } from './family/family-list.component';
 import { AddFamilyComponent } from './family/add-family.component';
-import { InventoryComponent } from 'src/inventory/inventory.component';
+import { InventoryComponent } from 'src/app/inventory/inventory.component';
 // import { InventoryListComponent } from './inventory/inventory-list.component';
 
 // import { AddInventoryComponent } from './inventory/add-inventory.component';
