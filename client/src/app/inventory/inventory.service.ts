@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 
 // RxJS Imports
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 // Inventory Imports
 import { Inventory } from './inventory';
@@ -59,5 +59,10 @@ export class InventoryService {
   // Delete inventory item by ID
   deleteInventory(id: string): Observable<unknown> {
     return this.httpClient.delete<void>(`${this.inventoryUrl}/${id}`);
+  }
+
+  // Add new inventory item
+  addInventory(newInventory: Partial<Inventory>): Observable<string> {
+    return this.httpClient.post<{ id: string }>(this.inventoryUrl, newInventory).pipe(map(response => response.id));
   }
 }
