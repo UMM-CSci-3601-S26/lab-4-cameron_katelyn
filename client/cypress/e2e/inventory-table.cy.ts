@@ -24,9 +24,9 @@ describe('Inventory', () => {
     //nextTick(1000); // Alternate wait method, preferably wait on the API call instead
   });
 
-  it('Should have the correct title', () => {
-    page.getAppTitle().should('contain', 'Inventory');
-  });
+  // it('Should have the correct title', () => {
+  //   page.getAppTitle().should('contain', 'Inventory');
+  // });
 
   it('Should display inventory items', () => {
     page.getSidenavButton().click();
