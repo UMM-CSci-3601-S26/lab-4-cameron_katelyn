@@ -161,7 +161,7 @@ public class InventoryControllerSpec {
   void canGetAllInventory() throws IOException {
     when(ctx.queryParamMap()).thenReturn(Collections.emptyMap());
 
-    inventoryController.getInventories(ctx);
+    inventoryController.getAllInventory(ctx);
 
     verify(ctx).json(inventoryArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
@@ -172,11 +172,11 @@ public class InventoryControllerSpec {
   }
 
     @Test
-  void getInventoryWithExistentId() throws IOException {
+  void getInventoryItemWithExistentId() throws IOException {
     String id = inventoryId.toHexString();
     when(ctx.pathParam("id")).thenReturn(id);
 
-    inventoryController.getInventory(ctx);
+    inventoryController.getInventoryItem(ctx);
 
     verify(ctx).json(inventoryCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
@@ -185,23 +185,23 @@ public class InventoryControllerSpec {
   }
 
   @Test
-  void getInventoryWithBadId() throws IOException {
+  void getInventoryItemWithBadId() throws IOException {
     when(ctx.pathParam("id")).thenReturn("bad");
 
     Throwable exception = assertThrows(BadRequestResponse.class, () -> {
-      inventoryController.getInventory(ctx);
+      inventoryController.getInventoryItem(ctx);
     });
 
     assertEquals("The requested inventory id wasn't a legal Mongo Object ID.", exception.getMessage());
   }
 
   @Test
-  void getInventoryWithNonexistentId() throws IOException {
+  void getInventoryItemWithNonexistentId() throws IOException {
     String id = "588935f5c668650dc77df581";
     when(ctx.pathParam("id")).thenReturn(id);
 
     Throwable exception = assertThrows(NotFoundResponse.class, () -> {
-      inventoryController.getInventory(ctx);
+      inventoryController.getInventoryItem(ctx);
     });
 
     assertEquals("The requested inventory item was not found", exception.getMessage());
@@ -211,7 +211,7 @@ public class InventoryControllerSpec {
     when(ctx.queryParamMap()).thenReturn(Map.of("quantity", List.of("5")));
     when(ctx.queryParam("quantity")).thenReturn("5");
 
-    inventoryController.getInventories(ctx);
+    inventoryController.getAllInventory(ctx);
 
     verify(ctx).json(inventoryArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
@@ -220,12 +220,12 @@ public class InventoryControllerSpec {
     assertEquals("Eraser", inventoryArrayListCaptor.getValue().get(0).item);
   }
   @Test
-  void getInventoriesRejectsNonIntegerQuantity() {
+  void getAllInventoryRejectsNonIntegerQuantity() {
     when(ctx.queryParamMap()).thenReturn(Map.of("quantity", List.of("notAnInt")));
     when(ctx.queryParam("quantity")).thenReturn("notAnInt");
 
     BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
-      inventoryController.getInventories(ctx);
+      inventoryController.getAllInventory(ctx);
   });
 
     assertEquals("quantity must be an integer.", ex.getMessage());
@@ -235,7 +235,7 @@ public class InventoryControllerSpec {
     when(ctx.queryParamMap()).thenReturn(Map.of("item", List.of("pEnCiL")));
     when(ctx.queryParam("item")).thenReturn("pEnCiL");
 
-    inventoryController.getInventories(ctx);
+    inventoryController.getAllInventory(ctx);
 
     verify(ctx).json(inventoryArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
@@ -249,7 +249,7 @@ public class InventoryControllerSpec {
     when(ctx.queryParamMap()).thenReturn(Map.of("brand", List.of("tIcOnDeRoGa")));
     when(ctx.queryParam("brand")).thenReturn("tIcOnDeRoGa");
 
-    inventoryController.getInventories(ctx);
+    inventoryController.getAllInventory(ctx);
 
     verify(ctx).json(inventoryArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
@@ -263,7 +263,7 @@ public class InventoryControllerSpec {
     when(ctx.queryParamMap()).thenReturn(Map.of("color", List.of("yElLoW")));
     when(ctx.queryParam("color")).thenReturn("yElLoW");
 
-    inventoryController.getInventories(ctx);
+    inventoryController.getAllInventory(ctx);
 
     verify(ctx).json(inventoryArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
@@ -277,7 +277,7 @@ public class InventoryControllerSpec {
     when(ctx.queryParamMap()).thenReturn(Map.of("size", List.of("sTaNdArD")));
     when(ctx.queryParam("size")).thenReturn("sTaNdArD");
 
-    inventoryController.getInventories(ctx);
+    inventoryController.getAllInventory(ctx);
 
     verify(ctx).json(inventoryArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
@@ -291,7 +291,7 @@ public class InventoryControllerSpec {
     when(ctx.queryParamMap()).thenReturn(Map.of("description", List.of("A standard backpack")));
     when(ctx.queryParam("description")).thenReturn("A standard backpack");
 
-    inventoryController.getInventories(ctx);
+    inventoryController.getAllInventory(ctx);
 
     verify(ctx).json(inventoryArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
@@ -304,7 +304,7 @@ public class InventoryControllerSpec {
   void canFilterInventoryByNotesCaseInsensitive() {
     when(ctx.queryParamMap()).thenReturn(Map.of("notes", List.of("Plain colors only")));
     when(ctx.queryParam("notes")).thenReturn("Plain colors only");
-    inventoryController.getInventories(ctx);
+    inventoryController.getAllInventory(ctx);
 
     verify(ctx).json(inventoryArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
@@ -317,7 +317,7 @@ public class InventoryControllerSpec {
   void canFilterInventoryByMaterialCaseInsensitive() {
     when(ctx.queryParamMap()).thenReturn(Map.of("material", List.of("wood")));
     when(ctx.queryParam("material")).thenReturn("wood");
-    inventoryController.getInventories(ctx);
+    inventoryController.getAllInventory(ctx);
 
     verify(ctx).json(inventoryArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
@@ -330,7 +330,7 @@ public class InventoryControllerSpec {
   void canFilterInventoryByTypeCaseInsensitive() {
     when(ctx.queryParamMap()).thenReturn(Map.of("type", List.of("shoulder bag")));
     when(ctx.queryParam("type")).thenReturn("shoulder bag");
-    inventoryController.getInventories(ctx);
+    inventoryController.getAllInventory(ctx);
 
     verify(ctx).json(inventoryArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
