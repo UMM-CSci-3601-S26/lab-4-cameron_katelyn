@@ -60,4 +60,8 @@ export class InventoryPage {
   getInventoryFilterClear() {
     return cy.get('[data-cy="inventory-clear"]');
   }
+  getDeleteMenuItem() {
+    return cy.get('button[mat-menu-item]').contains('Delete');
+  }
 }
+
